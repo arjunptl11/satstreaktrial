@@ -13,12 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import { useUserStats } from '../hooks/useUserStats';
-import { colors, fonts, spacing, radius } from '../utils/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { fonts, spacing, radius } from '../utils/theme';
 import { ACHIEVEMENTS, DAILY_GOALS } from '../utils/constants';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { stats, unlockedAchievements } = useUserStats(user?.id);
+  const { colors, isDark, toggleTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [selectedGoal, setSelectedGoal] = useState(50);
 
@@ -63,9 +65,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>Profile</Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={[styles.headerBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>Profile</Text>
       </View>
 
       <ScrollView
@@ -75,53 +77,58 @@ export default function ProfileScreen() {
       >
         {/* User avatar + info */}
         <LinearGradient
-          colors={[colors.navyDark, colors.navyPrimary]}
+          colors={[colors.brand, colors.primary]}
           style={styles.profileCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
+          <View style={[styles.avatar, { backgroundColor: colors.yellow }]}>
+            <Text style={[styles.avatarText, { color: colors.brand }]}>{initials}</Text>
           </View>
           <Text style={styles.displayName}>{displayName}</Text>
           <Text style={styles.userEmail}>{email}</Text>
           <View style={styles.profileStats}>
             <View style={styles.profileStat}>
-              <Text style={styles.profileStatValue}>{stats.streak}</Text>
+              <Text style={[styles.profileStatValue, { color: colors.yellow }]}>{stats.streak}</Text>
               <Text style={styles.profileStatLabel}>Streak</Text>
             </View>
             <View style={styles.profileStatDivider} />
             <View style={styles.profileStat}>
-              <Text style={styles.profileStatValue}>{stats.xp}</Text>
+              <Text style={[styles.profileStatValue, { color: colors.yellow }]}>{stats.xp}</Text>
               <Text style={styles.profileStatLabel}>Total XP</Text>
             </View>
             <View style={styles.profileStatDivider} />
             <View style={styles.profileStat}>
-              <Text style={styles.profileStatValue}>{accuracy}%</Text>
+              <Text style={[styles.profileStatValue, { color: colors.yellow }]}>{accuracy}%</Text>
               <Text style={styles.profileStatLabel}>Accuracy</Text>
             </View>
           </View>
         </LinearGradient>
 
         {/* Daily Goal */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="trophy-outline" size={18} color={colors.navyPrimary} />
-            <Text style={styles.cardTitle}>Daily Goal</Text>
+            <Ionicons name="trophy-outline" size={18} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Daily Goal</Text>
           </View>
-          <Text style={styles.cardSub}>Choose your daily XP target</Text>
+          <Text style={[styles.cardSub, { color: colors.textMuted }]}>Choose your daily XP target</Text>
           <View style={styles.goalOptions}>
             {DAILY_GOALS.map(goal => (
               <TouchableOpacity
                 key={goal}
                 onPress={() => setSelectedGoal(goal)}
-                style={[styles.goalOption, selectedGoal === goal && styles.goalOptionActive]}
+                style={[
+                  styles.goalOption,
+                  { borderColor: colors.border, backgroundColor: colors.cardAlt },
+                  selectedGoal === goal && { borderColor: colors.primary, backgroundColor: colors.primaryXLight },
+                ]}
                 activeOpacity={0.75}
               >
                 <Text
                   style={[
                     styles.goalValue,
-                    selectedGoal === goal && styles.goalValueActive,
+                    { color: colors.text },
+                    selectedGoal === goal && { color: colors.primary },
                   ]}
                 >
                   {goal}
@@ -129,7 +136,8 @@ export default function ProfileScreen() {
                 <Text
                   style={[
                     styles.goalUnit,
-                    selectedGoal === goal && styles.goalUnitActive,
+                    { color: colors.textMuted },
+                    selectedGoal === goal && { color: colors.primary },
                   ]}
                 >
                   XP
@@ -137,7 +145,8 @@ export default function ProfileScreen() {
                 <Text
                   style={[
                     styles.goalLabel,
-                    selectedGoal === goal && styles.goalLabelActive,
+                    { color: colors.textSecondary },
+                    selectedGoal === goal && { color: colors.primary },
                   ]}
                 >
                   {goalLabels[goal]}
@@ -145,14 +154,15 @@ export default function ProfileScreen() {
                 <Text
                   style={[
                     styles.goalDesc,
-                    selectedGoal === goal && styles.goalDescActive,
+                    { color: colors.textLight },
+                    selectedGoal === goal && { color: colors.primaryText },
                   ]}
                 >
                   {goalDescriptions[goal]}
                 </Text>
                 {selectedGoal === goal && (
-                  <View style={styles.goalCheck}>
-                    <Ionicons name="checkmark" size={12} color={colors.white} />
+                  <View style={[styles.goalCheck, { backgroundColor: colors.primary }]}>
+                    <Ionicons name="checkmark" size={12} color="#ffffff" />
                   </View>
                 )}
               </TouchableOpacity>
@@ -160,16 +170,17 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Notifications */}
-        <View style={styles.card}>
-          <View style={styles.settingRow}>
+        {/* Settings */}
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {/* Notifications */}
+          <View style={[styles.settingRow, { borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 14, marginBottom: 14 }]}>
             <View style={styles.settingLeft}>
-              <View style={styles.settingIconWrap}>
-                <Ionicons name="notifications" size={20} color={colors.navyPrimary} />
+              <View style={[styles.settingIconWrap, { backgroundColor: colors.primaryXLight }]}>
+                <Ionicons name="notifications" size={20} color={colors.primary} />
               </View>
               <View>
-                <Text style={styles.settingTitle}>Daily Reminders</Text>
-                <Text style={styles.settingSub}>
+                <Text style={[styles.settingTitle, { color: colors.text }]}>Daily Reminders</Text>
+                <Text style={[styles.settingSub, { color: colors.textMuted }]}>
                   Get reminded to practice daily
                 </Text>
               </View>
@@ -177,20 +188,42 @@ export default function ProfileScreen() {
             <Switch
               value={notificationsEnabled}
               onValueChange={setNotificationsEnabled}
-              trackColor={{ false: colors.border, true: colors.navyPrimary }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={notificationsEnabled ? colors.yellow : colors.white}
+              ios_backgroundColor={colors.border}
+            />
+          </View>
+
+          {/* Dark Mode */}
+          <View style={styles.settingRow}>
+            <View style={styles.settingLeft}>
+              <View style={[styles.settingIconWrap, { backgroundColor: colors.accentXLight }]}>
+                <Ionicons name={isDark ? 'moon' : 'sunny'} size={20} color={colors.accent} />
+              </View>
+              <View>
+                <Text style={[styles.settingTitle, { color: colors.text }]}>Dark Mode</Text>
+                <Text style={[styles.settingSub, { color: colors.textMuted }]}>
+                  {isDark ? 'Dark theme active' : 'Light theme active'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.accent }}
+              thumbColor={isDark ? colors.yellow : colors.white}
               ios_backgroundColor={colors.border}
             />
           </View>
         </View>
 
         {/* Achievements */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="medal" size={18} color={colors.navyPrimary} />
-            <Text style={styles.cardTitle}>Achievements</Text>
-            <View style={styles.achievementCountBadge}>
-              <Text style={styles.achievementCountText}>
+            <Ionicons name="medal" size={18} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Achievements</Text>
+            <View style={[styles.achievementCountBadge, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
+              <Text style={[styles.achievementCountText, { color: colors.primary }]}>
                 {unlockedAchievements.length}/{ACHIEVEMENTS.length}
               </Text>
             </View>
@@ -203,34 +236,31 @@ export default function ProfileScreen() {
                   key={achievement.id}
                   style={[
                     styles.achievementItem,
-                    isUnlocked ? styles.achievementUnlocked : styles.achievementLocked,
+                    isUnlocked
+                      ? { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }
+                      : { backgroundColor: colors.cardAlt, borderColor: colors.border, opacity: 0.5 },
                   ]}
                 >
-                  <Text
-                    style={[styles.achievementEmoji, !isUnlocked && styles.achievementEmojiLocked]}
-                  >
+                  <Text style={styles.achievementEmoji}>
                     {isUnlocked ? achievement.emoji : '🔒'}
                   </Text>
                   <Text
                     style={[
                       styles.achievementName,
-                      !isUnlocked && styles.achievementNameLocked,
+                      { color: isUnlocked ? colors.primaryText : colors.textMuted },
                     ]}
                     numberOfLines={2}
                   >
-                    {isUnlocked ? achievement.name : '???'}
+                    {achievement.name}
                   </Text>
                   <Text
-                    style={[
-                      styles.achievementReq,
-                      !isUnlocked && styles.achievementReqLocked,
-                    ]}
+                    style={[styles.achievementReq, { color: colors.textMuted }]}
                     numberOfLines={2}
                   >
                     {achievement.requirement}
                   </Text>
                   {isUnlocked && achievement.xp > 0 && (
-                    <Text style={styles.achievementXp}>+{achievement.xp} XP</Text>
+                    <Text style={[styles.achievementXp, { color: colors.primary }]}>+{achievement.xp} XP</Text>
                   )}
                 </View>
               );
@@ -239,26 +269,26 @@ export default function ProfileScreen() {
         </View>
 
         {/* App info */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="information-circle-outline" size={18} color={colors.navyPrimary} />
-            <Text style={styles.cardTitle}>About</Text>
+            <Ionicons name="information-circle-outline" size={18} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>About</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Version</Text>
-            <Text style={styles.infoValue}>1.0.0</Text>
+          <View style={[styles.infoRow, { borderBottomColor: colors.borderLight }]}>
+            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Version</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>1.0.0</Text>
           </View>
           <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.infoLabel}>Questions Source</Text>
-            <Text style={styles.infoValue}>PineSAT API</Text>
+            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Questions Source</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>PineSAT API</Text>
           </View>
         </View>
 
         {/* Sign Out */}
         <TouchableOpacity onPress={handleSignOut} activeOpacity={0.8}>
-          <View style={styles.signOutBtn}>
+          <View style={[styles.signOutBtn, { backgroundColor: colors.card, borderColor: colors.errorLight }]}>
             <Ionicons name="log-out-outline" size={20} color={colors.error} />
-            <Text style={styles.signOutText}>Sign Out</Text>
+            <Text style={[styles.signOutText, { color: colors.error }]}>Sign Out</Text>
           </View>
         </TouchableOpacity>
 
@@ -269,19 +299,16 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
   headerBar: {
-    backgroundColor: colors.white,
     paddingHorizontal: spacing.md,
     paddingTop: 16,
     paddingBottom: 14,
     borderBottomWidth: 1.5,
-    borderBottomColor: colors.border,
   },
   screenTitle: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.textDark,
   },
   scroll: { flex: 1 },
   content: { padding: spacing.md },
@@ -291,7 +318,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: colors.navyDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
@@ -301,27 +328,20 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.yellow,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
     borderWidth: 3,
     borderColor: 'rgba(255,255,255,0.3)',
-    shadowColor: colors.yellow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
   },
   avatarText: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.navyDark,
   },
   displayName: {
     fontSize: fonts.xl,
     fontWeight: '800',
-    color: colors.white,
+    color: '#ffffff',
     marginBottom: 4,
   },
   userEmail: {
@@ -346,7 +366,6 @@ const styles = StyleSheet.create({
   profileStatValue: {
     fontSize: fonts.xl,
     fontWeight: '800',
-    color: colors.yellow,
   },
   profileStatLabel: {
     fontSize: fonts.xs,
@@ -356,12 +375,10 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -374,8 +391,8 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 14,
   },
-  cardTitle: { fontSize: fonts.lg, fontWeight: '700', color: colors.textDark, flex: 1 },
-  cardSub: { fontSize: fonts.sm, color: colors.textMuted, marginBottom: 14, marginTop: -8 },
+  cardTitle: { fontSize: fonts.lg, fontWeight: '700', flex: 1 },
+  cardSub: { fontSize: fonts.sm, marginBottom: 14, marginTop: -8 },
 
   goalOptions: { flexDirection: 'row', gap: 10 },
   goalOption: {
@@ -383,37 +400,24 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: 14,
     borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.offWhite,
     alignItems: 'center',
     position: 'relative',
-  },
-  goalOptionActive: {
-    borderColor: colors.navyPrimary,
-    backgroundColor: colors.navyXLight,
   },
   goalValue: {
     fontSize: fonts['2xl'],
     fontWeight: '900',
-    color: colors.textDark,
   },
-  goalValueActive: { color: colors.navyPrimary },
   goalUnit: {
     fontSize: fonts.xs,
-    color: colors.textMuted,
     fontWeight: '700',
     marginTop: -2,
   },
-  goalUnitActive: { color: colors.navyPrimary },
   goalLabel: {
     fontSize: fonts.sm,
     fontWeight: '700',
-    color: colors.textMid,
     marginTop: 4,
   },
-  goalLabelActive: { color: colors.navyPrimary },
-  goalDesc: { fontSize: fonts.xs, color: colors.textLight, marginTop: 2, textAlign: 'center' },
-  goalDescActive: { color: colors.navyLight },
+  goalDesc: { fontSize: fonts.xs, marginTop: 2, textAlign: 'center' },
   goalCheck: {
     position: 'absolute',
     top: 6,
@@ -421,7 +425,6 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: colors.navyPrimary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -436,24 +439,20 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: colors.navyXLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  settingTitle: { fontSize: fonts.base, fontWeight: '600', color: colors.textDark },
-  settingSub: { fontSize: fonts.xs, color: colors.textMuted, marginTop: 2 },
+  settingTitle: { fontSize: fonts.base, fontWeight: '600' },
+  settingSub: { fontSize: fonts.xs, marginTop: 2 },
 
   achievementCountBadge: {
-    backgroundColor: colors.navyXLight,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: colors.navyBorder,
   },
   achievementCountText: {
     fontSize: fonts.xs,
-    color: colors.navyPrimary,
     fontWeight: '700',
   },
   achievementsGrid: {
@@ -469,34 +468,20 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     position: 'relative',
   },
-  achievementUnlocked: {
-    backgroundColor: colors.navyXLight,
-    borderColor: colors.navyBorder,
-  },
-  achievementLocked: {
-    backgroundColor: colors.offWhite,
-    borderColor: colors.borderLight,
-  },
   achievementEmoji: { fontSize: 28, marginBottom: 6 },
-  achievementEmojiLocked: { opacity: 0.4 },
   achievementName: {
     fontSize: fonts.sm,
     fontWeight: '700',
-    color: colors.navyPrimary,
     textAlign: 'center',
     marginBottom: 2,
   },
-  achievementNameLocked: { color: colors.textLight },
   achievementReq: {
     fontSize: fonts.xs,
-    color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 14,
   },
-  achievementReqLocked: { color: colors.borderLight + 'FF' },
   achievementXp: {
     fontSize: fonts.xs,
-    color: colors.navyPrimary,
     fontWeight: '700',
     marginTop: 4,
   },
@@ -507,13 +492,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
-  infoLabel: { fontSize: fonts.sm, color: colors.textMuted },
-  infoValue: { fontSize: fonts.sm, color: colors.textDark, fontWeight: '600' },
+  infoLabel: { fontSize: fonts.sm },
+  infoValue: { fontSize: fonts.sm, fontWeight: '600' },
 
   signOutBtn: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     flexDirection: 'row',
@@ -521,11 +504,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1.5,
-    borderColor: colors.errorLight,
     marginBottom: 8,
   },
   signOutText: {
-    color: colors.error,
     fontSize: fonts.base,
     fontWeight: '700',
   },

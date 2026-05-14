@@ -11,20 +11,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import { useUserStats } from '../hooks/useUserStats';
-import { colors, fonts, spacing, radius } from '../utils/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { fonts, spacing, radius } from '../utils/theme';
 import { LEVELS, DOMAINS, DIFFICULTIES } from '../utils/constants';
-
-const difficultyConfig = {
-  Easy: { color: colors.easy, bg: colors.easyLight, icon: 'leaf-outline', label: 'Easier questions to build confidence' },
-  Medium: { color: colors.medium, bg: colors.mediumLight, icon: 'flame-outline', label: 'Balanced challenge for steady growth' },
-  Hard: { color: colors.error, bg: colors.errorLight, icon: 'skull-outline', label: 'Tough questions for advanced prep' },
-};
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
   const { stats, missedQuestions } = useUserStats(user?.id);
+  const { colors } = useTheme();
   const [selectedDifficulty, setSelectedDifficulty] = useState('Medium');
   const [selectedDomain, setSelectedDomain] = useState('All Domains');
+
+  const difficultyConfig = {
+    Easy: { color: colors.easy, bg: colors.easyBg, icon: 'leaf-outline', label: 'Easier questions to build confidence' },
+    Medium: { color: colors.accent, bg: colors.accentLight, icon: 'flame-outline', label: 'Balanced challenge for steady growth' },
+    Hard: { color: colors.error, bg: colors.errorLight, icon: 'skull-outline', label: 'Tough questions for advanced prep' },
+  };
 
   const displayName =
     user?.display_name ||
@@ -63,7 +65,7 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -72,16 +74,16 @@ export default function HomeScreen({ navigation }) {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>
-              {getGreeting()}, {firstName}! 👋
+            <Text style={[styles.greeting, { color: colors.text }]}>
+              {getGreeting()}, {firstName}!
             </Text>
-            <Text style={styles.subGreeting}>Ready to practice today?</Text>
+            <Text style={[styles.subGreeting, { color: colors.textMuted }]}>Ready to practice today?</Text>
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate('Profile')}
-            style={styles.avatarBtn}
+            style={[styles.avatarBtn, { backgroundColor: colors.brand }]}
           >
-            <Text style={styles.avatarText}>
+            <Text style={[styles.avatarText, { color: colors.yellow }]}>
               {firstName.charAt(0).toUpperCase()}
             </Text>
           </TouchableOpacity>
@@ -89,7 +91,7 @@ export default function HomeScreen({ navigation }) {
 
         {/* Streak Card */}
         <LinearGradient
-          colors={[colors.navyDark, colors.navyPrimary]}
+          colors={[colors.streak, colors.accent]}
           style={styles.streakCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -103,45 +105,44 @@ export default function HomeScreen({ navigation }) {
           </View>
           <View style={styles.streakRight}>
             <View style={styles.xpBadge}>
-              <Text style={styles.xpEmoji}>⚡</Text>
-              <Text style={styles.xpValue}>{stats.xp} XP</Text>
+              <Text style={styles.xpValue}>⚡ {stats.xp} XP</Text>
             </View>
             <Text style={styles.levelText}>Level {stats.level}</Text>
             <Text style={styles.streakMessage}>
               {stats.streak >= 7
-                ? '🔥 You\'re on fire!'
+                ? 'On fire!'
                 : stats.streak > 0
-                ? '💪 Keep it going!'
-                : '✨ Start your streak!'}
+                ? 'Keep it going!'
+                : 'Start your streak!'}
             </Text>
           </View>
         </LinearGradient>
 
         {/* Daily Goal */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleRow}>
-              <Ionicons name="trophy-outline" size={18} color={colors.navyPrimary} style={{ marginRight: 6 }} />
-              <Text style={styles.cardTitle}>Daily Goal</Text>
+              <Ionicons name="trophy-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Daily Goal</Text>
             </View>
-            <Text style={styles.goalXpText}>
+            <Text style={[styles.goalXpText, { color: colors.primary }]}>
               {dailyXP} / {dailyGoal} XP
             </Text>
           </View>
-          <View style={styles.progressBg}>
+          <View style={[styles.progressBg, { backgroundColor: colors.primaryXLight }]}>
             <View
               style={[
                 styles.progressFill,
-                { width: `${Math.max(goalProgress * 100, goalProgress > 0 ? 4 : 0)}%` },
+                { width: `${Math.max(goalProgress * 100, goalProgress > 0 ? 4 : 0)}%`, backgroundColor: colors.primary },
               ]}
             />
           </View>
           {goalProgress >= 1 ? (
-            <Text style={styles.goalComplete}>
-              🎉 Daily goal complete! Keep going for bonus XP!
+            <Text style={[styles.goalComplete, { color: colors.primary }]}>
+              Daily goal complete! Keep going for bonus XP!
             </Text>
           ) : (
-            <Text style={styles.goalRemaining}>
+            <Text style={[styles.goalRemaining, { color: colors.textMuted }]}>
               {dailyGoal - dailyXP} XP remaining to reach your goal
             </Text>
           )}
@@ -150,61 +151,60 @@ export default function HomeScreen({ navigation }) {
         {/* Daily Drill */}
         {!stats.dailyDrillDone && (
           <LinearGradient
-            colors={[colors.yellow, colors.yellowLight]}
-            style={styles.drillCard}
+            colors={[colors.primaryXLight, colors.accentXLight]}
+            style={[styles.drillCard, { borderWidth: 1.5, borderColor: colors.primaryLight }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.drillLeft}>
-              <View style={styles.drillIconWrap}>
-                <Ionicons name="flash" size={24} color={colors.navyDark} />
+              <View style={[styles.drillIconWrap, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="flash" size={24} color={colors.primary} />
               </View>
               <View style={{ marginLeft: 12 }}>
-                <Text style={styles.drillTitle}>Daily Drill</Text>
-                <Text style={styles.drillSub}>+5 bonus XP · 10 questions</Text>
+                <Text style={[styles.drillTitle, { color: colors.text }]}>Daily Drill</Text>
+                <Text style={[styles.drillSub, { color: colors.primary }]}>+5 bonus XP · 10 questions</Text>
               </View>
             </View>
             <TouchableOpacity
-              style={styles.drillBtn}
+              style={[styles.drillBtn, { backgroundColor: colors.primary }]}
               onPress={() => startPractice(true)}
               activeOpacity={0.85}
             >
-              <Text style={styles.drillBtnText}>Start</Text>
+              <Text style={[styles.drillBtnText, { color: colors.white }]}>Start</Text>
             </TouchableOpacity>
           </LinearGradient>
         )}
 
         {stats.dailyDrillDone && (
-          <View style={styles.drillDoneCard}>
+          <View style={[styles.drillDoneCard, { backgroundColor: colors.successLight, borderColor: colors.primary }]}>
             <View style={styles.drillDoneLeft}>
-              <View style={styles.drillDoneIcon}>
+              <View style={[styles.drillDoneIcon, { backgroundColor: colors.primaryXLight }]}>
                 <Ionicons name="checkmark-circle" size={24} color={colors.success} />
               </View>
               <View style={{ marginLeft: 12 }}>
-                <Text style={styles.drillDoneTitle}>Daily Drill Complete!</Text>
-                <Text style={styles.drillDoneSub}>Come back tomorrow for more</Text>
+                <Text style={[styles.drillDoneTitle, { color: colors.successText }]}>Daily Drill Complete!</Text>
+                <Text style={[styles.drillDoneSub, { color: colors.primary }]}>Come back tomorrow for more</Text>
               </View>
             </View>
-            <Text style={styles.drillDoneEmoji}>✅</Text>
           </View>
         )}
 
         {/* Quick Stats */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statItem, styles.statBorderRight]}>
-            <Ionicons name="checkmark-circle" size={22} color={colors.navyPrimary} />
-            <Text style={styles.statValue}>{accuracy}%</Text>
-            <Text style={styles.statLabel}>Accuracy</Text>
+        <View style={[styles.statsGrid, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.statItem, { borderRightWidth: 1.5, borderRightColor: colors.border }]}>
+            <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+            <Text style={[styles.statValue, { color: colors.text }]}>{accuracy}%</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Accuracy</Text>
           </View>
-          <View style={[styles.statItem, styles.statBorderRight]}>
-            <Ionicons name="help-circle" size={22} color={colors.yellow} />
-            <Text style={styles.statValue}>{stats.total_questions}</Text>
-            <Text style={styles.statLabel}>Questions</Text>
+          <View style={[styles.statItem, { borderRightWidth: 1.5, borderRightColor: colors.border }]}>
+            <Ionicons name="help-circle" size={22} color={colors.accent} />
+            <Text style={[styles.statValue, { color: colors.text }]}>{stats.total_questions}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Questions</Text>
           </View>
           <View style={styles.statItem}>
-            <Ionicons name="trophy" size={22} color={colors.navyLight} />
-            <Text style={styles.statValue}>Lv.{stats.level}</Text>
-            <Text style={styles.statLabel}>Level</Text>
+            <Ionicons name="trophy" size={22} color={colors.brand} />
+            <Text style={[styles.statValue, { color: colors.text }]}>Lv.{stats.level}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Level</Text>
           </View>
         </View>
 
@@ -214,34 +214,34 @@ export default function HomeScreen({ navigation }) {
             onPress={() => navigation.navigate('Review')}
             activeOpacity={0.85}
           >
-            <View style={styles.reviewCard}>
+            <View style={[styles.reviewCard, { backgroundColor: colors.card, borderColor: colors.errorLight }]}>
               <View style={styles.reviewLeft}>
-                <View style={styles.reviewIconWrap}>
+                <View style={[styles.reviewIconWrap, { backgroundColor: colors.errorLight }]}>
                   <Ionicons name="refresh-circle" size={28} color={colors.error} />
                 </View>
                 <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.reviewTitle}>Review Mistakes</Text>
-                  <Text style={styles.reviewSub}>
+                  <Text style={[styles.reviewTitle, { color: colors.text }]}>Review Mistakes</Text>
+                  <Text style={[styles.reviewSub, { color: colors.textMuted }]}>
                     {missedQuestions.length} question{missedQuestions.length !== 1 ? 's' : ''} to review
                   </Text>
                 </View>
               </View>
-              <View style={styles.reviewBadge}>
-                <Text style={styles.reviewBadgeText}>{missedQuestions.length}</Text>
+              <View style={[styles.reviewBadge, { backgroundColor: colors.error }]}>
+                <Text style={[styles.reviewBadgeText, { color: colors.white }]}>{missedQuestions.length}</Text>
               </View>
             </View>
           </TouchableOpacity>
         )}
 
         {/* Practice Section */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="book-outline" size={18} color={colors.navyPrimary} style={{ marginRight: 6 }} />
-            <Text style={styles.cardTitle}>Start Practice</Text>
+            <Ionicons name="book-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Start Practice</Text>
           </View>
 
           {/* Domain Selector */}
-          <Text style={styles.sectionLabel}>Subject Domain</Text>
+          <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Subject Domain</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -254,14 +254,16 @@ export default function HomeScreen({ navigation }) {
                 onPress={() => setSelectedDomain(domain)}
                 style={[
                   styles.domainChip,
-                  selectedDomain === domain && styles.domainChipActive,
+                  { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                  selectedDomain === domain && { backgroundColor: colors.primaryXLight, borderColor: colors.primary },
                 ]}
                 activeOpacity={0.75}
               >
                 <Text
                   style={[
                     styles.domainChipText,
-                    selectedDomain === domain && styles.domainChipTextActive,
+                    { color: colors.textMuted },
+                    selectedDomain === domain && { color: colors.primary },
                   ]}
                   numberOfLines={1}
                 >
@@ -272,7 +274,7 @@ export default function HomeScreen({ navigation }) {
           </ScrollView>
 
           {/* Difficulty Selector */}
-          <Text style={styles.sectionLabel}>Difficulty</Text>
+          <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Difficulty</Text>
           {DIFFICULTIES.map(diff => {
             const cfg = difficultyConfig[diff];
             const isSelected = selectedDifficulty === diff;
@@ -282,6 +284,7 @@ export default function HomeScreen({ navigation }) {
                 onPress={() => setSelectedDifficulty(diff)}
                 style={[
                   styles.diffBtn,
+                  { borderColor: colors.border, backgroundColor: colors.card },
                   isSelected && {
                     borderColor: cfg.color,
                     backgroundColor: cfg.bg,
@@ -295,6 +298,7 @@ export default function HomeScreen({ navigation }) {
                     <Text
                       style={[
                         styles.diffText,
+                        { color: colors.textSecondary },
                         isSelected && { color: cfg.color, fontWeight: '700' },
                       ]}
                     >
@@ -322,7 +326,7 @@ export default function HomeScreen({ navigation }) {
             style={{ marginTop: 12 }}
           >
             <LinearGradient
-              colors={[colors.navyLight, colors.navyPrimary]}
+              colors={[colors.primary, colors.accentDark]}
               style={styles.startBtn}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -330,10 +334,10 @@ export default function HomeScreen({ navigation }) {
               <Ionicons
                 name="flash"
                 size={20}
-                color={colors.yellow}
+                color={colors.white}
                 style={{ marginRight: 8 }}
               />
-              <Text style={styles.startBtnText}>Start Practice</Text>
+              <Text style={[styles.startBtnText, { color: colors.white }]}>Start Practice</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -345,7 +349,7 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
   scroll: { flex: 1 },
   content: { padding: spacing.md },
 
@@ -358,24 +362,21 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.textDark,
     letterSpacing: -0.3,
   },
-  subGreeting: { fontSize: fonts.sm, color: colors.textMuted, marginTop: 2 },
+  subGreeting: { fontSize: fonts.sm, marginTop: 2 },
   avatarBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.navyPrimary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.navyPrimary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
   },
-  avatarText: { color: colors.yellow, fontSize: fonts.lg, fontWeight: '800' },
+  avatarText: { fontSize: fonts.lg, fontWeight: '800' },
 
   streakCard: {
     borderRadius: radius.lg,
@@ -384,7 +385,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: colors.navyDark,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -392,32 +392,27 @@ const styles = StyleSheet.create({
   },
   streakLeft: { flexDirection: 'row', alignItems: 'center' },
   streakEmoji: { fontSize: 50, marginRight: 14 },
-  streakCount: { fontSize: 42, fontWeight: '900', color: colors.yellow, lineHeight: 46 },
-  streakLabel: { fontSize: fonts.sm, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
+  streakCount: { fontSize: 42, fontWeight: '900', color: '#ffffff', lineHeight: 46 },
+  streakLabel: { fontSize: fonts.sm, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
   streakRight: { alignItems: 'flex-end' },
   xpBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,221,0,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: radius.full,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,221,0,0.3)',
+    borderColor: 'rgba(255,255,255,0.3)',
   },
-  xpEmoji: { fontSize: 14, marginRight: 4 },
-  xpValue: { color: colors.yellow, fontWeight: '700', fontSize: fonts.base },
-  levelText: { color: 'rgba(255,255,255,0.6)', fontSize: fonts.xs, fontWeight: '600', marginBottom: 2 },
-  streakMessage: { color: 'rgba(255,255,255,0.65)', fontSize: fonts.xs },
+  xpValue: { color: '#ffffff', fontWeight: '700', fontSize: fonts.base },
+  levelText: { color: 'rgba(255,255,255,0.7)', fontSize: fonts.xs, fontWeight: '600', marginBottom: 2 },
+  streakMessage: { color: 'rgba(255,255,255,0.75)', fontSize: fonts.xs },
 
   card: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -431,29 +426,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
-  cardTitle: { fontSize: fonts.lg, fontWeight: '700', color: colors.textDark },
-  goalXpText: { fontSize: fonts.sm, color: colors.navyPrimary, fontWeight: '700' },
+  cardTitle: { fontSize: fonts.lg, fontWeight: '700' },
+  goalXpText: { fontSize: fonts.sm, fontWeight: '700' },
   progressBg: {
     height: 10,
-    backgroundColor: colors.navyXLight,
     borderRadius: radius.full,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.yellow,
     borderRadius: radius.full,
   },
   goalComplete: {
     marginTop: 8,
     fontSize: fonts.sm,
-    color: colors.navyPrimary,
     fontWeight: '600',
   },
   goalRemaining: {
     marginTop: 8,
     fontSize: fonts.xs,
-    color: colors.textMuted,
   },
 
   drillCard: {
@@ -463,38 +454,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: colors.yellow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
   },
   drillLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   drillIconWrap: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: 'rgba(13,0,112,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  drillTitle: { fontSize: fonts.lg, fontWeight: '700', color: colors.navyDark },
-  drillSub: { fontSize: fonts.xs, color: colors.navyPrimary, fontWeight: '600', marginTop: 2 },
+  drillTitle: { fontSize: fonts.lg, fontWeight: '700' },
+  drillSub: { fontSize: fonts.xs, fontWeight: '600', marginTop: 2 },
   drillBtn: {
-    backgroundColor: colors.navyPrimary,
     paddingHorizontal: 22,
     paddingVertical: 11,
     borderRadius: radius.full,
-    shadowColor: colors.navyDark,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
   },
-  drillBtnText: { color: colors.yellow, fontWeight: '800', fontSize: fonts.base },
+  drillBtnText: { fontWeight: '800', fontSize: fonts.base },
 
   drillDoneCard: {
-    backgroundColor: colors.successLight,
     borderRadius: radius.md,
     padding: spacing.md,
     flexDirection: 'row',
@@ -502,27 +484,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: '#A7F3D0',
   },
   drillDoneLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   drillDoneIcon: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: 'rgba(16,185,129,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  drillDoneTitle: { fontSize: fonts.base, fontWeight: '700', color: '#065F46' },
-  drillDoneSub: { fontSize: fonts.xs, color: '#059669', marginTop: 2 },
-  drillDoneEmoji: { fontSize: 24 },
+  drillDoneTitle: { fontSize: fonts.base, fontWeight: '700' },
+  drillDoneSub: { fontSize: fonts.xs, marginTop: 2 },
 
   statsGrid: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     flexDirection: 'row',
     borderWidth: 1.5,
-    borderColor: colors.border,
     marginBottom: 16,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -532,21 +509,17 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statItem: { flex: 1, paddingVertical: 18, alignItems: 'center' },
-  statBorderRight: { borderRightWidth: 1.5, borderRightColor: colors.border },
   statValue: {
     fontSize: fonts.xl,
     fontWeight: '800',
-    color: colors.textDark,
     marginTop: 5,
   },
-  statLabel: { fontSize: fonts.xs, color: colors.textMuted, fontWeight: '600', marginTop: 2 },
+  statLabel: { fontSize: fonts.xs, fontWeight: '600', marginTop: 2 },
 
   reviewCard: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1.5,
-    borderColor: colors.errorLight,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -562,26 +535,23 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: colors.errorLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  reviewTitle: { fontSize: fonts.base, fontWeight: '700', color: colors.textDark },
-  reviewSub: { fontSize: fonts.xs, color: colors.textMuted, marginTop: 2 },
+  reviewTitle: { fontSize: fonts.base, fontWeight: '700' },
+  reviewSub: { fontSize: fonts.xs, marginTop: 2 },
   reviewBadge: {
-    backgroundColor: colors.error,
     width: 30,
     height: 30,
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  reviewBadgeText: { color: colors.white, fontSize: fonts.sm, fontWeight: '800' },
+  reviewBadgeText: { fontSize: fonts.sm, fontWeight: '800' },
 
   sectionLabel: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.textMuted,
     marginBottom: 10,
     marginTop: 4,
     textTransform: 'uppercase',
@@ -593,31 +563,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: radius.full,
-    backgroundColor: colors.offWhite,
     borderWidth: 1.5,
-    borderColor: colors.border,
   },
-  domainChipActive: {
-    backgroundColor: colors.navyXLight,
-    borderColor: colors.navyPrimary,
-  },
-  domainChipText: { fontSize: fonts.sm, color: colors.textMuted, fontWeight: '600' },
-  domainChipTextActive: { color: colors.navyPrimary },
+  domainChipText: { fontSize: fonts.sm, fontWeight: '600' },
 
   diffBtn: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: colors.border,
     borderRadius: radius.sm,
     padding: 14,
     marginBottom: 8,
-    backgroundColor: colors.white,
   },
   diffLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   diffDot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
-  diffText: { fontSize: fonts.base, color: colors.textMid, fontWeight: '600' },
+  diffText: { fontSize: fonts.base, fontWeight: '600' },
   diffDesc: { fontSize: fonts.xs, marginTop: 2, fontWeight: '500' },
 
   startBtn: {
@@ -626,11 +587,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    shadowColor: colors.navyPrimary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 6,
   },
-  startBtnText: { color: colors.yellow, fontSize: fonts.lg, fontWeight: '800' },
+  startBtnText: { fontSize: fonts.lg, fontWeight: '800' },
 });

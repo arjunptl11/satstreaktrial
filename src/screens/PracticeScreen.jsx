@@ -15,9 +15,29 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import { useQuestions } from '../hooks/useQuestions';
 import { useUserStats } from '../hooks/useUserStats';
-import { colors, fonts, spacing, radius } from '../utils/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { fonts, spacing, radius } from '../utils/theme';
+import ChoiceButton from '../components/practice/ChoiceButton';
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
+
+const sanitizeText = (text) => {
+  if (!text) return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')   // bold markdown
+    .replace(/\*(.*?)\*/g, '$1')        // italic markdown
+    .replace(/—/g, ' - ')               // em dashes
+    .replace(/–/g, ' - ')               // en dashes
+    .replace(/\s+/g, ' ')               // extra spaces
+    .trim();
+};
+
+const formatQuestionText = (text) => {
+  if (!text) return '';
+  const sanitized = sanitizeText(text);
+  // Break after sentence-ending punctuation before certain question words
+  return sanitized.replace(/([.?!])\s+(Which|What|How|Choose|Select|According|Based)/g, '$1\n\n$2');
+};
 
 function XPToast({ xp, isCorrect, visible }) {
   const opacity = React.useRef(new Animated.Value(0)).current;
@@ -46,11 +66,10 @@ function XPToast({ xp, isCorrect, visible }) {
       style={[
         styles.xpToast,
         { opacity, transform: [{ translateY }] },
-        isCorrect ? styles.xpToastCorrect : styles.xpToastIncorrect,
       ]}
     >
       <Text style={styles.xpToastText}>
-        {isCorrect ? `+${xp} XP ⚡` : `+${xp} XP`}
+        {isCorrect ? `+${xp} XP` : `+${xp} XP`}
       </Text>
     </Animated.View>
   );
@@ -61,18 +80,19 @@ export default function PracticeScreen({ navigation, route }) {
   const { user } = useAuth();
   const { questions, loading, error, loadQuestions } = useQuestions();
   const { recordAnswer, updateStreak, addMissedQuestion } = useUserStats(user?.id);
+  const { colors } = useTheme();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(0);
-  const [xpGained, setXpGained] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [lastXp, setLastXp] = useState(0);
   const [lastCorrect, setLastCorrect] = useState(false);
   const [sessionDone, setSessionDone] = useState(false);
   const [totalXpSession, setTotalXpSession] = useState(0);
+  const [showExplanation, setShowExplanation] = useState(false);
 
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -97,6 +117,7 @@ export default function PracticeScreen({ navigation, route }) {
 
     const isCorrect = selectedChoice === currentQuestion.correctAnswer;
     setSubmitted(true);
+    setShowExplanation(false);
 
     const xp = await recordAnswer({
       questionId: currentQuestion.id,
@@ -117,7 +138,6 @@ export default function PracticeScreen({ navigation, route }) {
 
     setSessionCorrect(prev => prev + (isCorrect ? 1 : 0));
     setSessionTotal(prev => prev + 1);
-    setXpGained(prev => prev + xp);
     setTotalXpSession(prev => prev + xp);
   };
 
@@ -130,6 +150,7 @@ export default function PracticeScreen({ navigation, route }) {
         setSelectedChoice(null);
         setSubmitted(false);
         setShowToast(false);
+        setShowExplanation(false);
       });
     }
   };
@@ -138,40 +159,19 @@ export default function PracticeScreen({ navigation, route }) {
     setSessionDone(true);
   };
 
-  const getChoiceStyle = (label) => {
-    if (!submitted) {
-      return selectedChoice === label ? styles.choiceSelected : styles.choiceDefault;
-    }
-    if (label === currentQuestion.correctAnswer) return styles.choiceCorrect;
-    if (label === selectedChoice && label !== currentQuestion.correctAnswer)
-      return styles.choiceIncorrect;
-    return styles.choiceDefault;
+  const getDifficultyColors = (diff) => {
+    if (diff === 'Easy') return { color: colors.easy, bg: colors.easyBg };
+    if (diff === 'Hard') return { color: colors.hard, bg: colors.hardBg };
+    return { color: colors.medium, bg: colors.mediumBg };
   };
 
-  const getChoiceTextStyle = (label) => {
+  const getChoiceState = (label) => {
     if (!submitted) {
-      return selectedChoice === label ? styles.choiceTextSelected : styles.choiceText;
+      return selectedChoice === label ? 'selected' : 'default';
     }
-    if (label === currentQuestion.correctAnswer) return styles.choiceTextCorrect;
-    if (label === selectedChoice && label !== currentQuestion.correctAnswer)
-      return styles.choiceTextIncorrect;
-    return styles.choiceText;
-  };
-
-  const getChoiceLabelStyle = (label) => {
-    if (!submitted) {
-      return selectedChoice === label ? styles.labelSelected : styles.labelDefault;
-    }
-    if (label === currentQuestion.correctAnswer) return styles.labelCorrect;
-    if (label === selectedChoice && label !== currentQuestion.correctAnswer)
-      return styles.labelIncorrect;
-    return styles.labelDefault;
-  };
-
-  const getDifficultyColor = (diff) => {
-    if (diff === 'Easy') return colors.easy;
-    if (diff === 'Hard') return colors.error;
-    return colors.medium;
+    if (label === currentQuestion.correctAnswer) return 'correct';
+    if (label === selectedChoice && label !== currentQuestion.correctAnswer) return 'incorrect';
+    return 'dimmed';
   };
 
   // Session complete screen
@@ -180,7 +180,7 @@ export default function PracticeScreen({ navigation, route }) {
     const isPerfect = sessionCorrect === sessionTotal && sessionTotal > 0;
     return (
       <LinearGradient
-        colors={[colors.navyDark, colors.navyPrimary]}
+        colors={[colors.brand, colors.primary]}
         style={styles.sessionDoneGradient}
       >
         <SafeAreaView style={styles.sessionDoneSafe}>
@@ -216,7 +216,7 @@ export default function PracticeScreen({ navigation, route }) {
 
             {isDailyDrill && (
               <View style={styles.drillBonusCard}>
-                <Text style={styles.drillBonusText}>⚡ +5 Daily Drill Bonus XP!</Text>
+                <Text style={styles.drillBonusText}>+5 Daily Drill Bonus XP!</Text>
               </View>
             )}
 
@@ -225,8 +225,8 @@ export default function PracticeScreen({ navigation, route }) {
               activeOpacity={0.85}
               style={{ marginTop: 24 }}
             >
-              <View style={styles.doneBtn}>
-                <Text style={styles.doneBtnText}>Back to Home</Text>
+              <View style={[styles.doneBtn, { backgroundColor: colors.yellow }]}>
+                <Text style={[styles.doneBtnText, { color: colors.brand }]}>Back to Home</Text>
               </View>
             </TouchableOpacity>
 
@@ -239,11 +239,12 @@ export default function PracticeScreen({ navigation, route }) {
                 setSessionTotal(0);
                 setTotalXpSession(0);
                 setSessionDone(false);
+                setShowExplanation(false);
                 loadQuestions(difficulty, domain, count);
               }}
               style={styles.practiceAgainBtn}
             >
-              <Text style={styles.practiceAgainText}>Practice Again ↻</Text>
+              <Text style={styles.practiceAgainText}>Practice Again</Text>
             </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
@@ -254,7 +255,7 @@ export default function PracticeScreen({ navigation, route }) {
   // Loading state
   if (loading) {
     return (
-      <LinearGradient colors={[colors.navyDark, colors.navyPrimary]} style={styles.loadingContainer}>
+      <LinearGradient colors={[colors.brand, colors.primary]} style={styles.loadingContainer}>
         <ActivityIndicator color={colors.yellow} size="large" />
         <Text style={styles.loadingText}>Loading questions...</Text>
       </LinearGradient>
@@ -264,30 +265,34 @@ export default function PracticeScreen({ navigation, route }) {
   // Error state
   if (error || questions.length === 0) {
     return (
-      <LinearGradient colors={[colors.navyDark, colors.navyPrimary]} style={styles.loadingContainer}>
+      <LinearGradient colors={[colors.brand, colors.primary]} style={styles.loadingContainer}>
         <Text style={{ fontSize: 48, marginBottom: 16 }}>😕</Text>
         <Text style={styles.loadingText}>
           {error ? 'Failed to load questions' : 'No questions found'}
         </Text>
         <TouchableOpacity
           onPress={() => loadQuestions(difficulty, domain, count)}
-          style={styles.retryBtn}
+          style={[styles.retryBtn, { backgroundColor: colors.yellow }]}
         >
-          <Text style={styles.retryText}>Try Again</Text>
+          <Text style={[styles.retryText, { color: colors.brand }]}>Try Again</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 12 }}>
-          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: fonts.sm }}>← Go Back</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: fonts.sm }}>Go Back</Text>
         </TouchableOpacity>
       </LinearGradient>
     );
   }
 
   const progress = (currentIndex + 1) / questions.length;
+  const diffColors = getDifficultyColors(currentQuestion.difficulty);
+  const passage = currentQuestion.passage;
+  const hasPassage = passage && passage !== 'null' && passage.trim().length > 0;
+  const isCorrectAnswer = submitted && selectedChoice === currentQuestion.correctAnswer;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => {
             Alert.alert(
@@ -299,29 +304,29 @@ export default function PracticeScreen({ navigation, route }) {
               ]
             );
           }}
-          style={styles.backBtn}
+          style={[styles.backBtn, { backgroundColor: colors.cardAlt }]}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="close" size={24} color={colors.textDark} />
+          <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>
-            {isDailyDrill ? '⚡ Daily Drill' : difficulty || 'Practice'}
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            {isDailyDrill ? 'Daily Drill' : difficulty || 'Practice'}
           </Text>
-          <Text style={styles.headerSub}>
+          <Text style={[styles.headerSub, { color: colors.textMuted }]}>
             {currentIndex + 1} of {questions.length}
           </Text>
         </View>
 
-        <View style={styles.scoreBadge}>
-          <Text style={styles.scoreText}>{sessionCorrect}/{sessionTotal}</Text>
+        <View style={[styles.scoreBadge, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
+          <Text style={[styles.scoreText, { color: colors.primary }]}>{sessionCorrect}/{sessionTotal}</Text>
         </View>
       </View>
 
       {/* Progress bar */}
-      <View style={styles.progressTrack}>
-        <Animated.View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+      <View style={[styles.progressTrack, { backgroundColor: colors.primaryXLight }]}>
+        <Animated.View style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
       </View>
 
       <ScrollView
@@ -332,41 +337,31 @@ export default function PracticeScreen({ navigation, route }) {
         <Animated.View style={{ opacity: fadeAnim }}>
           {/* Domain + Difficulty tags */}
           <View style={styles.tagRow}>
-            <View style={styles.domainTag}>
-              <Text style={styles.domainTagText}>{currentQuestion.domain}</Text>
+            <View style={[styles.domainTag, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
+              <Text style={[styles.domainTagText, { color: colors.primary }]}>{currentQuestion.domain}</Text>
             </View>
-            <View
-              style={[
-                styles.diffTag,
-                { backgroundColor: getDifficultyColor(currentQuestion.difficulty) + '20' },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.diffTagText,
-                  { color: getDifficultyColor(currentQuestion.difficulty) },
-                ]}
-              >
+            <View style={[styles.diffTag, { backgroundColor: diffColors.bg }]}>
+              <Text style={[styles.diffTagText, { color: diffColors.color }]}>
                 {currentQuestion.difficulty}
               </Text>
             </View>
           </View>
 
           {/* Passage */}
-          {currentQuestion.passage && (
-            <View style={styles.passageCard}>
+          {hasPassage && (
+            <View style={[styles.passageCard, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
               <View style={styles.passageHeader}>
-                <Ionicons name="document-text-outline" size={16} color={colors.navyPrimary} />
-                <Text style={styles.passageLabel}>Passage</Text>
+                <Ionicons name="document-text-outline" size={16} color={colors.textMuted} />
+                <Text style={[styles.passageLabel, { color: colors.textMuted }]}>Passage</Text>
               </View>
-              <Text style={styles.passageText}>{currentQuestion.passage}</Text>
+              <Text style={[styles.passageText, { color: colors.textSecondary }]}>{sanitizeText(passage)}</Text>
             </View>
           )}
 
           {/* Question */}
-          <View style={styles.questionCard}>
-            <Text style={styles.questionLabel}>Question {currentIndex + 1}</Text>
-            <Text style={styles.questionText}>{currentQuestion.prompt}</Text>
+          <View style={[styles.questionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.questionLabel, { color: colors.primary }]}>Question {currentIndex + 1}</Text>
+            <Text style={[styles.questionText, { color: colors.text }]}>{formatQuestionText(currentQuestion.prompt)}</Text>
           </View>
 
           {/* Choices */}
@@ -375,74 +370,76 @@ export default function PracticeScreen({ navigation, route }) {
               const choiceText = currentQuestion.choices[label];
               if (!choiceText) return null;
               return (
-                <TouchableOpacity
+                <ChoiceButton
                   key={label}
+                  letter={label}
+                  text={sanitizeText(choiceText)}
+                  state={getChoiceState(label)}
                   onPress={() => !submitted && setSelectedChoice(label)}
-                  style={[styles.choiceBtn, getChoiceStyle(label)]}
-                  activeOpacity={submitted ? 1 : 0.75}
                   disabled={submitted}
-                >
-                  <View style={[styles.choiceLabel, getChoiceLabelStyle(label)]}>
-                    <Text style={styles.choiceLabelText}>{label}</Text>
-                  </View>
-                  <Text style={[styles.choiceMainText, getChoiceTextStyle(label)]}>
-                    {choiceText}
-                  </Text>
-                  {submitted && label === currentQuestion.correctAnswer && (
-                    <Ionicons name="checkmark-circle" size={20} color={colors.success} />
-                  )}
-                  {submitted && label === selectedChoice && label !== currentQuestion.correctAnswer && (
-                    <Ionicons name="close-circle" size={20} color={colors.error} />
-                  )}
-                </TouchableOpacity>
+                />
               );
             })}
           </View>
 
-          {/* Explanation (after submit) */}
+          {/* Answer result + expandable explanation */}
           {submitted && (
-            <View
-              style={[
-                styles.explanationCard,
-                selectedChoice === currentQuestion.correctAnswer
-                  ? styles.explanationCorrect
-                  : styles.explanationIncorrect,
-              ]}
-            >
-              <View style={styles.explanationHeader}>
+            <View style={styles.resultSection}>
+              {/* Result header */}
+              <View
+                style={[
+                  styles.resultHeader,
+                  {
+                    backgroundColor: isCorrectAnswer ? colors.successLight : colors.errorLight,
+                    borderColor: isCorrectAnswer ? colors.success : colors.error,
+                  },
+                ]}
+              >
                 <Ionicons
-                  name={
-                    selectedChoice === currentQuestion.correctAnswer
-                      ? 'checkmark-circle'
-                      : 'close-circle'
-                  }
+                  name={isCorrectAnswer ? 'checkmark-circle' : 'close-circle'}
                   size={22}
-                  color={
-                    selectedChoice === currentQuestion.correctAnswer
-                      ? colors.success
-                      : colors.error
-                  }
+                  color={isCorrectAnswer ? colors.success : colors.error}
                 />
                 <Text
                   style={[
-                    styles.explanationTitle,
-                    {
-                      color:
-                        selectedChoice === currentQuestion.correctAnswer
-                          ? colors.success
-                          : colors.error,
-                    },
+                    styles.resultTitle,
+                    { color: isCorrectAnswer ? colors.successText : colors.errorText },
                   ]}
                 >
-                  {selectedChoice === currentQuestion.correctAnswer ? 'Correct!' : 'Incorrect'}
+                  {isCorrectAnswer ? 'Correct!' : 'Incorrect'}
                 </Text>
+                {!isCorrectAnswer && (
+                  <Text style={[styles.correctAnswerHint, { color: colors.successText }]}>
+                    Correct: {currentQuestion.correctAnswer}
+                  </Text>
+                )}
               </View>
-              {currentQuestion.explanation ? (
-                <Text style={styles.explanationText}>{currentQuestion.explanation}</Text>
-              ) : (
-                <Text style={styles.explanationText}>
-                  The correct answer is {currentQuestion.correctAnswer}.
+
+              {/* See Explanation toggle */}
+              <TouchableOpacity
+                onPress={() => setShowExplanation(prev => !prev)}
+                style={[styles.explanationToggle, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}
+                activeOpacity={0.75}
+              >
+                <Ionicons name="bulb-outline" size={16} color={colors.primary} />
+                <Text style={[styles.explanationToggleText, { color: colors.primary }]}>
+                  {showExplanation ? 'Hide Explanation' : 'See Explanation'}
                 </Text>
+                <Ionicons
+                  name={showExplanation ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+
+              {showExplanation && (
+                <View style={[styles.explanationBox, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
+                  <Text style={[styles.explanationText, { color: colors.primaryText }]}>
+                    {currentQuestion.explanation
+                      ? sanitizeText(currentQuestion.explanation)
+                      : `The correct answer is ${currentQuestion.correctAnswer}.`}
+                  </Text>
+                </View>
               )}
             </View>
           )}
@@ -459,7 +456,7 @@ export default function PracticeScreen({ navigation, route }) {
                 <LinearGradient
                   colors={
                     selectedChoice
-                      ? [colors.navyLight, colors.navyPrimary]
+                      ? [colors.primary, colors.accentDark]
                       : [colors.border, colors.border]
                   }
                   style={styles.submitBtn}
@@ -469,7 +466,7 @@ export default function PracticeScreen({ navigation, route }) {
                   <Text
                     style={[
                       styles.submitBtnText,
-                      !selectedChoice && styles.submitBtnTextDisabled,
+                      { color: selectedChoice ? colors.white : colors.textLight },
                     ]}
                   >
                     Submit Answer
@@ -477,7 +474,7 @@ export default function PracticeScreen({ navigation, route }) {
                 </LinearGradient>
               </TouchableOpacity>
             ) : (
-              <View style={styles.nextRow}>
+              <View style={{ flex: 1 }}>
                 {currentIndex < questions.length - 1 ? (
                   <TouchableOpacity
                     onPress={handleNext}
@@ -485,12 +482,12 @@ export default function PracticeScreen({ navigation, route }) {
                     style={{ flex: 1 }}
                   >
                     <LinearGradient
-                      colors={[colors.navyLight, colors.navyPrimary]}
+                      colors={[colors.primary, colors.accentDark]}
                       style={styles.submitBtn}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                     >
-                      <Text style={styles.submitBtnText}>Next Question →</Text>
+                      <Text style={[styles.submitBtnText, { color: colors.white }]}>Next Question</Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 ) : (
@@ -505,8 +502,8 @@ export default function PracticeScreen({ navigation, route }) {
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                     >
-                      <Text style={[styles.submitBtnText, { color: colors.navyDark }]}>
-                        Finish Session 🏆
+                      <Text style={[styles.submitBtnText, { color: colors.brand }]}>
+                        Finish Session
                       </Text>
                     </LinearGradient>
                   </TouchableOpacity>
@@ -517,7 +514,7 @@ export default function PracticeScreen({ navigation, route }) {
 
           {!submitted && currentIndex < questions.length - 1 && (
             <TouchableOpacity onPress={handleEndSession} style={styles.endEarlyBtn}>
-              <Text style={styles.endEarlyText}>End Session Early</Text>
+              <Text style={[styles.endEarlyText, { color: colors.textMuted }]}>End Session Early</Text>
             </TouchableOpacity>
           )}
         </Animated.View>
@@ -532,75 +529,61 @@ export default function PracticeScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
   },
-  loadingText: { color: colors.white, fontSize: fonts.lg, fontWeight: '600' },
+  loadingText: { color: '#ffffff', fontSize: fonts.lg, fontWeight: '600' },
   retryBtn: {
-    backgroundColor: colors.yellow,
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: radius.full,
     marginTop: 8,
   },
-  retryText: { color: colors.navyDark, fontWeight: '800', fontSize: fonts.base },
+  retryText: { fontWeight: '800', fontSize: fonts.base },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: colors.offWhite,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: fonts.base, fontWeight: '700', color: colors.textDark },
-  headerSub: { fontSize: fonts.xs, color: colors.textMuted },
+  headerTitle: { fontSize: fonts.base, fontWeight: '700' },
+  headerSub: { fontSize: fonts.xs },
   scoreBadge: {
-    backgroundColor: colors.navyXLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.full,
     borderWidth: 1.5,
-    borderColor: colors.navyBorder,
   },
-  scoreText: { fontSize: fonts.sm, fontWeight: '700', color: colors.navyPrimary },
+  scoreText: { fontSize: fonts.sm, fontWeight: '700' },
 
-  progressTrack: {
-    height: 4,
-    backgroundColor: colors.navyXLight,
-  },
-  progressFill: {
-    height: 4,
-    backgroundColor: colors.navyPrimary,
-  },
+  progressTrack: { height: 4 },
+  progressFill: { height: 4 },
 
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.md },
 
   tagRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   domainTag: {
-    backgroundColor: colors.navyXLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: colors.navyBorder,
   },
-  domainTagText: { fontSize: fonts.xs, color: colors.navyPrimary, fontWeight: '600' },
+  domainTagText: { fontSize: fonts.xs, fontWeight: '600' },
   diffTag: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -609,12 +592,10 @@ const styles = StyleSheet.create({
   diffTagText: { fontSize: fonts.xs, fontWeight: '700' },
 
   passageCard: {
-    backgroundColor: colors.offWhite,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: 14,
     borderWidth: 1.5,
-    borderColor: colors.border,
   },
   passageHeader: {
     flexDirection: 'row',
@@ -625,116 +606,77 @@ const styles = StyleSheet.create({
   passageLabel: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.navyPrimary,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   passageText: {
     fontSize: fonts.sm,
-    color: colors.textMid,
     lineHeight: 22,
   },
 
   questionCard: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: 14,
     borderWidth: 1.5,
-    borderColor: colors.navyBorder,
-    shadowColor: colors.navyPrimary,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
   },
   questionLabel: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.navyPrimary,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   questionText: {
     fontSize: fonts.base,
-    color: colors.textDark,
     lineHeight: 24,
     fontWeight: '500',
   },
 
-  choicesContainer: { gap: 10, marginBottom: 16 },
-  choiceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: radius.md,
-    padding: 14,
-    borderWidth: 2,
-    gap: 12,
-  },
-  choiceDefault: {
-    backgroundColor: colors.white,
-    borderColor: colors.border,
-  },
-  choiceSelected: {
-    backgroundColor: colors.navyXLight,
-    borderColor: colors.navyPrimary,
-  },
-  choiceCorrect: {
-    backgroundColor: colors.successLight,
-    borderColor: colors.success,
-  },
-  choiceIncorrect: {
-    backgroundColor: colors.errorLight,
-    borderColor: colors.error,
-  },
-  choiceLabel: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelDefault: { backgroundColor: colors.offWhite },
-  labelSelected: { backgroundColor: colors.navyPrimary },
-  labelCorrect: { backgroundColor: colors.success },
-  labelIncorrect: { backgroundColor: colors.error },
-  choiceLabelText: { fontSize: fonts.sm, fontWeight: '800', color: colors.white },
-  choiceMainText: { flex: 1, fontSize: fonts.base, lineHeight: 22 },
-  choiceText: { color: colors.textDark },
-  choiceTextSelected: { color: colors.navyPrimary, fontWeight: '600' },
-  choiceTextCorrect: { color: '#065F46', fontWeight: '600' },
-  choiceTextIncorrect: { color: '#991B1B', fontWeight: '600' },
+  choicesContainer: { marginBottom: 16 },
 
-  explanationCard: {
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: 16,
-    borderWidth: 1.5,
-  },
-  explanationCorrect: {
-    backgroundColor: colors.successLight,
-    borderColor: colors.success,
-  },
-  explanationIncorrect: {
-    backgroundColor: colors.errorLight,
-    borderColor: colors.error,
-  },
-  explanationHeader: {
+  resultSection: { marginBottom: 16 },
+  resultHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
     marginBottom: 8,
   },
-  explanationTitle: { fontSize: fonts.base, fontWeight: '700' },
+  resultTitle: { fontSize: fonts.base, fontWeight: '700', flex: 1 },
+  correctAnswerHint: { fontSize: fonts.sm, fontWeight: '600' },
+
+  explanationToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    marginBottom: 4,
+  },
+  explanationToggleText: { flex: 1, fontSize: fonts.sm, fontWeight: '700' },
+
+  explanationBox: {
+    borderRadius: radius.md,
+    padding: spacing.md,
+    borderWidth: 1.5,
+    marginTop: 4,
+  },
   explanationText: {
     fontSize: fonts.sm,
-    color: colors.textMid,
     lineHeight: 22,
   },
 
   actionRow: { marginBottom: 8 },
-  nextRow: { flex: 1 },
   submitBtn: {
     borderRadius: radius.sm,
     paddingVertical: 16,
@@ -742,14 +684,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   submitBtnText: {
-    color: colors.yellow,
     fontSize: fonts.lg,
     fontWeight: '700',
   },
-  submitBtnTextDisabled: { color: colors.textLight },
 
   endEarlyBtn: { alignItems: 'center', paddingVertical: 8 },
-  endEarlyText: { color: colors.textMuted, fontSize: fonts.sm, fontWeight: '600' },
+  endEarlyText: { fontSize: fonts.sm, fontWeight: '600' },
 
   xpToast: {
     position: 'absolute',
@@ -758,6 +698,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: radius.full,
+    backgroundColor: '#1a00be',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -765,9 +706,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     zIndex: 999,
   },
-  xpToastCorrect: { backgroundColor: colors.navyPrimary },
-  xpToastIncorrect: { backgroundColor: colors.textMuted },
-  xpToastText: { color: colors.yellow, fontWeight: '800', fontSize: fonts.base },
+  xpToastText: { color: '#FFDD00', fontWeight: '800', fontSize: fonts.base },
 
   // Session done
   sessionDoneGradient: { flex: 1 },
@@ -782,7 +721,7 @@ const styles = StyleSheet.create({
   sessionDoneTitle: {
     fontSize: fonts['3xl'],
     fontWeight: '800',
-    color: colors.yellow,
+    color: '#FFDD00',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -811,7 +750,7 @@ const styles = StyleSheet.create({
   sessionStatValue: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.white,
+    color: '#ffffff',
   },
   sessionStatLabel: {
     fontSize: fonts.xs,
@@ -828,21 +767,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,221,0,0.4)',
   },
-  drillBonusText: { color: colors.yellow, fontWeight: '700', fontSize: fonts.base },
+  drillBonusText: { color: '#FFDD00', fontWeight: '700', fontSize: fonts.base },
   doneBtn: {
-    backgroundColor: colors.yellow,
     paddingHorizontal: 40,
     paddingVertical: 16,
     borderRadius: radius.full,
     alignItems: 'center',
-    shadowColor: colors.yellow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 6,
   },
   doneBtnText: {
-    color: colors.navyDark,
     fontSize: fonts.lg,
     fontWeight: '800',
   },

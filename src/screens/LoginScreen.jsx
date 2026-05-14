@@ -14,7 +14,9 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
-import { colors, fonts, spacing, radius } from '../utils/theme';
+import { lightColors, fonts, spacing, radius } from '../utils/theme';
+
+const colors = lightColors;
 
 export default function LoginScreen({ navigation }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -48,7 +50,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <LinearGradient
-      colors={[colors.navyDark, colors.navyPrimary, colors.navyLight]}
+      colors={['#0d0070', '#1a00be', '#3d22e8']}
       style={styles.gradient}
       start={{ x: 0, y: 0 }}
       end={{ x: 0.3, y: 1 }}
@@ -65,11 +67,15 @@ export default function LoginScreen({ navigation }) {
           >
             {/* Logo */}
             <View style={styles.logoContainer}>
-              <View style={styles.logoIcon}>
+              <Text style={styles.logoText}>
                 <Text style={styles.logoEmoji}>⚡</Text>
-              </View>
-              <Text style={styles.logoText}>SATstreak</Text>
-              <Text style={styles.tagline}>Daily SAT practice that builds streaks</Text>
+                {' '}SATstreak
+              </Text>
+              <Text style={styles.byLine}>
+                by{' '}
+                <Text style={styles.arjunBold}>Arjun</Text>
+                <Text style={styles.tutorsText}>Tutors</Text>
+              </Text>
             </View>
 
             {/* Card */}
@@ -132,14 +138,14 @@ export default function LoginScreen({ navigation }) {
                     style={styles.eyeBtn}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                    <Text style={styles.eyeText}>{showPassword ? 'Hide' : 'Show'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               <TouchableOpacity onPress={handleSubmit} disabled={loading} activeOpacity={0.85}>
                 <LinearGradient
-                  colors={[colors.navyLight, colors.navyPrimary]}
+                  colors={['#3d22e8', '#1a00be']}
                   style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -198,20 +204,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 36,
   },
-  logoIcon: {
-    width: 76,
-    height: 76,
-    borderRadius: 22,
-    backgroundColor: colors.yellow,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 14,
-    shadowColor: colors.yellow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    elevation: 10,
-  },
   logoEmoji: { fontSize: 38 },
   logoText: {
     fontSize: 38,
@@ -219,12 +211,19 @@ const styles = StyleSheet.create({
     color: colors.yellow,
     letterSpacing: -0.5,
   },
-  tagline: {
-    fontSize: fonts.sm,
-    color: 'rgba(255,255,255,0.72)',
+  byLine: {
+    fontSize: fonts.base,
+    color: 'rgba(255,255,255,0.8)',
     marginTop: 8,
     textAlign: 'center',
-    letterSpacing: 0.2,
+  },
+  arjunBold: {
+    fontWeight: '800',
+    color: colors.yellow,
+  },
+  tutorsText: {
+    fontWeight: '400',
+    color: 'rgba(255,255,255,0.8)',
   },
   card: {
     backgroundColor: colors.white,
@@ -239,7 +238,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.textDark,
+    color: colors.text,
     marginBottom: 4,
   },
   cardSubtitle: {
@@ -251,23 +250,23 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fonts.sm,
     fontWeight: '600',
-    color: colors.textMid,
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: colors.offWhite,
+    backgroundColor: colors.cardAlt,
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
     fontSize: fonts.base,
-    color: colors.textDark,
+    color: colors.text,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.offWhite,
+    backgroundColor: colors.cardAlt,
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
@@ -278,10 +277,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
     fontSize: fonts.base,
-    color: colors.textDark,
+    color: colors.text,
   },
   eyeBtn: { paddingHorizontal: 14, paddingVertical: 14 },
-  eyeIcon: { fontSize: 18 },
+  eyeText: {
+    fontSize: fonts.sm,
+    fontWeight: '700',
+    color: colors.primary,
+  },
   submitBtn: {
     borderRadius: radius.sm,
     paddingVertical: 16,
@@ -297,7 +300,7 @@ const styles = StyleSheet.create({
   },
   toggleBtn: { marginTop: spacing.md, alignItems: 'center' },
   toggleText: { color: colors.textMuted, fontSize: fonts.sm },
-  toggleLink: { color: colors.navyPrimary, fontWeight: '700' },
+  toggleLink: { color: colors.brand, fontWeight: '700' },
   demoBtn: { alignItems: 'center', marginTop: 24 },
   demoText: {
     color: 'rgba(255,255,255,0.85)',

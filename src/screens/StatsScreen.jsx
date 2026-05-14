@@ -10,10 +10,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import { useUserStats } from '../hooks/useUserStats';
-import { colors, fonts, spacing, radius } from '../utils/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { fonts, spacing, radius } from '../utils/theme';
 import { LEVELS } from '../utils/constants';
 
-function BarChart({ data }) {
+function BarChart({ data, colors }) {
   const maxXp = Math.max(...data.map(d => d.xp), 1);
   return (
     <View style={chartStyles.container}>
@@ -22,18 +23,18 @@ function BarChart({ data }) {
           const barHeight = Math.max((item.xp / maxXp) * 100, item.xp > 0 ? 4 : 2);
           return (
             <View key={index} style={chartStyles.barWrapper}>
-              <View style={chartStyles.barBg}>
+              <View style={[chartStyles.barBg, { backgroundColor: colors.primaryXLight }]}>
                 <View
                   style={[
                     chartStyles.barFill,
                     { height: `${barHeight}%` },
-                    item.xp > 0 && chartStyles.barActive,
+                    item.xp > 0 ? { backgroundColor: colors.primary } : { backgroundColor: colors.border },
                   ]}
                 />
               </View>
-              <Text style={chartStyles.barLabel}>{item.day}</Text>
+              <Text style={[chartStyles.barLabel, { color: colors.textMuted }]}>{item.day}</Text>
               {item.xp > 0 && (
-                <Text style={chartStyles.barXp}>{item.xp}</Text>
+                <Text style={[chartStyles.barXp, { color: colors.primary }]}>{item.xp}</Text>
               )}
             </View>
           );
@@ -60,26 +61,21 @@ const chartStyles = StyleSheet.create({
   barBg: {
     width: '100%',
     height: 100,
-    backgroundColor: colors.navyXLight,
     borderRadius: 6,
     justifyContent: 'flex-end',
     overflow: 'hidden',
   },
   barFill: {
     width: '100%',
-    backgroundColor: colors.border,
     borderRadius: 6,
   },
-  barActive: { backgroundColor: colors.navyPrimary },
   barLabel: {
     fontSize: fonts.xs,
-    color: colors.textMuted,
     fontWeight: '600',
     marginTop: 4,
   },
   barXp: {
     fontSize: 9,
-    color: colors.navyPrimary,
     fontWeight: '700',
     marginTop: 1,
   },
@@ -88,6 +84,7 @@ const chartStyles = StyleSheet.create({
 export default function StatsScreen() {
   const { user } = useAuth();
   const { stats, domainStats, weeklyData } = useUserStats(user?.id);
+  const { colors } = useTheme();
 
   const accuracy =
     stats.total_questions > 0
@@ -102,10 +99,10 @@ export default function StatsScreen() {
   const activeDays = weeklyData.filter(d => d.xp > 0).length;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.headerBar}>
-        <Text style={styles.screenTitle}>My Progress</Text>
-        <Text style={styles.screenSub}>Track your SAT prep journey</Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={[styles.headerBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>My Progress</Text>
+        <Text style={[styles.screenSub, { color: colors.textMuted }]}>Track your SAT prep journey</Text>
       </View>
 
       <ScrollView
@@ -117,7 +114,7 @@ export default function StatsScreen() {
         <View style={styles.summaryRow}>
           {/* Streak Card */}
           <LinearGradient
-            colors={[colors.navyDark, colors.navyPrimary]}
+            colors={[colors.streak, colors.accent]}
             style={styles.summaryCardLeft}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -130,79 +127,77 @@ export default function StatsScreen() {
 
           {/* XP Card */}
           <LinearGradient
-            colors={[colors.yellow, colors.yellowDark]}
+            colors={[colors.brand, colors.primary]}
             style={styles.summaryCardRight}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
             <Text style={styles.summaryEmoji}>⚡</Text>
-            <Text style={[styles.summaryValue, { color: colors.navyDark }]}>{stats.xp}</Text>
-            <Text style={[styles.summaryLabel, { color: colors.navyDark }]}>Total XP</Text>
-            <Text style={[styles.summaryExtra, { color: colors.navyPrimary }]}>
-              Level {stats.level}
-            </Text>
+            <Text style={[styles.summaryValue, { color: colors.yellow }]}>{stats.xp}</Text>
+            <Text style={styles.summaryLabel}>Total XP</Text>
+            <Text style={styles.summaryExtra}>Level {stats.level}</Text>
           </LinearGradient>
         </View>
 
         {/* Level Progress */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
             <View style={styles.cardTitleRow}>
-              <Ionicons name="trophy" size={18} color={colors.navyPrimary} />
-              <Text style={styles.cardTitle}>Level {stats.level}</Text>
+              <Ionicons name="trophy" size={18} color={colors.primary} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Level {stats.level}</Text>
             </View>
-            <Text style={styles.cardRight}>{xpToNext} XP to next level</Text>
+            <Text style={[styles.cardRight, { color: colors.primary }]}>{xpToNext} XP to next level</Text>
           </View>
-          <View style={styles.progressBg}>
+          <View style={[styles.progressBg, { backgroundColor: colors.primaryXLight }]}>
             <View
-              style={[styles.progressFill, { width: `${Math.max(levelProgress * 100, 2)}%` }]}
+              style={[styles.progressFill, { width: `${Math.max(levelProgress * 100, 2)}%`, backgroundColor: colors.primary }]}
             />
           </View>
           <View style={styles.levelFooter}>
-            <Text style={styles.levelFooterText}>Level {stats.level}</Text>
-            <Text style={styles.levelFooterText}>Level {stats.level + 1}</Text>
+            <Text style={[styles.levelFooterText, { color: colors.textMuted }]}>Level {stats.level}</Text>
+            <Text style={[styles.levelFooterText, { color: colors.textMuted }]}>Level {stats.level + 1}</Text>
           </View>
         </View>
 
         {/* Accuracy & Questions */}
         <View style={styles.statsRow}>
-          <View style={[styles.statBox, styles.statBoxBorder]}>
-            <View style={styles.statBoxIcon}>
-              <Ionicons name="checkmark-circle" size={24} color={colors.navyPrimary} />
+          <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.statBoxIcon, { backgroundColor: colors.primaryXLight }]}>
+              <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
             </View>
-            <Text style={styles.statBoxValue}>{accuracy}%</Text>
-            <Text style={styles.statBoxLabel}>Accuracy</Text>
-            <Text style={styles.statBoxSub}>
+            <Text style={[styles.statBoxValue, { color: colors.text }]}>{accuracy}%</Text>
+            <Text style={[styles.statBoxLabel, { color: colors.textMuted }]}>Accuracy</Text>
+            <Text style={[styles.statBoxSub, { color: colors.textLight }]}>
               {stats.total_correct}/{stats.total_questions} correct
             </Text>
           </View>
-          <View style={styles.statBox}>
-            <View style={styles.statBoxIcon}>
-              <Ionicons name="help-circle" size={24} color={colors.yellow} />
+          <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.statBoxIcon, { backgroundColor: colors.accentXLight }]}>
+              <Ionicons name="help-circle" size={24} color={colors.accent} />
             </View>
-            <Text style={styles.statBoxValue}>{stats.total_questions}</Text>
-            <Text style={styles.statBoxLabel}>Questions</Text>
-            <Text style={styles.statBoxSub}>Total attempted</Text>
+            <Text style={[styles.statBoxValue, { color: colors.text }]}>{stats.total_questions}</Text>
+            <Text style={[styles.statBoxLabel, { color: colors.textMuted }]}>Questions</Text>
+            <Text style={[styles.statBoxSub, { color: colors.textLight }]}>Total attempted</Text>
           </View>
         </View>
 
         {/* Weekly Activity */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
             <View style={styles.cardTitleRow}>
-              <Ionicons name="calendar" size={18} color={colors.navyPrimary} />
-              <Text style={styles.cardTitle}>This Week</Text>
+              <Ionicons name="calendar" size={18} color={colors.primary} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}>This Week</Text>
             </View>
-            <Text style={styles.cardRight}>{totalWeeklyXp} XP · {activeDays} days</Text>
+            <Text style={[styles.cardRight, { color: colors.primary }]}>{totalWeeklyXp} XP · {activeDays} days</Text>
           </View>
-          <BarChart data={weeklyData} />
+          <BarChart data={weeklyData} colors={colors} />
         </View>
 
         {/* Domain Performance */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="bar-chart" size={18} color={colors.navyPrimary} />
-            <Text style={styles.cardTitle}>Domain Performance</Text>
+            <Ionicons name="bar-chart" size={18} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Domain Performance</Text>
           </View>
           {domainStats.map((domain, index) => {
             const pct =
@@ -210,19 +205,19 @@ export default function StatsScreen() {
                 ? Math.round((domain.total_correct / domain.total_questions) * 100)
                 : 0;
             const barColor =
-              pct >= 80 ? colors.success : pct >= 60 ? colors.medium : colors.error;
+              pct >= 80 ? colors.success : pct >= 60 ? colors.accent : colors.error;
             return (
               <View key={index} style={styles.domainRow}>
                 <View style={styles.domainInfo}>
-                  <Text style={styles.domainName} numberOfLines={1}>
+                  <Text style={[styles.domainName, { color: colors.text }]} numberOfLines={1}>
                     {domain.domain}
                   </Text>
-                  <Text style={styles.domainSub}>
+                  <Text style={[styles.domainSub, { color: colors.textMuted }]}>
                     {domain.total_correct}/{domain.total_questions} correct
                   </Text>
                 </View>
                 <View style={styles.domainBarContainer}>
-                  <View style={styles.domainBarBg}>
+                  <View style={[styles.domainBarBg, { backgroundColor: colors.primaryXLight }]}>
                     <View
                       style={[
                         styles.domainBarFill,
@@ -238,31 +233,31 @@ export default function StatsScreen() {
         </View>
 
         {/* Personal Records */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="medal" size={18} color={colors.navyPrimary} />
-            <Text style={styles.cardTitle}>Personal Records</Text>
+            <Ionicons name="medal" size={18} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Personal Records</Text>
           </View>
           <View style={styles.recordsGrid}>
-            <View style={styles.recordItem}>
+            <View style={[styles.recordItem, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
               <Text style={styles.recordEmoji}>🔥</Text>
-              <Text style={styles.recordValue}>{stats.best_streak || stats.streak}</Text>
-              <Text style={styles.recordLabel}>Best Streak</Text>
+              <Text style={[styles.recordValue, { color: colors.primary }]}>{stats.best_streak || stats.streak}</Text>
+              <Text style={[styles.recordLabel, { color: colors.textMuted }]}>Best Streak</Text>
             </View>
-            <View style={styles.recordItem}>
+            <View style={[styles.recordItem, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
               <Text style={styles.recordEmoji}>📚</Text>
-              <Text style={styles.recordValue}>{stats.total_questions}</Text>
-              <Text style={styles.recordLabel}>Questions Done</Text>
+              <Text style={[styles.recordValue, { color: colors.primary }]}>{stats.total_questions}</Text>
+              <Text style={[styles.recordLabel, { color: colors.textMuted }]}>Questions Done</Text>
             </View>
-            <View style={styles.recordItem}>
+            <View style={[styles.recordItem, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
               <Text style={styles.recordEmoji}>🎯</Text>
-              <Text style={styles.recordValue}>{accuracy}%</Text>
-              <Text style={styles.recordLabel}>Accuracy</Text>
+              <Text style={[styles.recordValue, { color: colors.primary }]}>{accuracy}%</Text>
+              <Text style={[styles.recordLabel, { color: colors.textMuted }]}>Accuracy</Text>
             </View>
-            <View style={styles.recordItem}>
+            <View style={[styles.recordItem, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}>
               <Text style={styles.recordEmoji}>⚡</Text>
-              <Text style={styles.recordValue}>{stats.xp}</Text>
-              <Text style={styles.recordLabel}>Total XP</Text>
+              <Text style={[styles.recordValue, { color: colors.primary }]}>{stats.xp}</Text>
+              <Text style={[styles.recordLabel, { color: colors.textMuted }]}>Total XP</Text>
             </View>
           </View>
         </View>
@@ -274,21 +269,18 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1 },
   headerBar: {
-    backgroundColor: colors.white,
     paddingHorizontal: spacing.md,
     paddingTop: 16,
     paddingBottom: 14,
     borderBottomWidth: 1.5,
-    borderBottomColor: colors.border,
   },
   screenTitle: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.textDark,
   },
-  screenSub: { fontSize: fonts.sm, color: colors.textMuted, marginTop: 2 },
+  screenSub: { fontSize: fonts.sm, marginTop: 2 },
   scroll: { flex: 1 },
   content: { padding: spacing.md },
 
@@ -298,7 +290,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
-    shadowColor: colors.navyDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -309,14 +301,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
-    shadowColor: colors.yellow,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
   },
   summaryEmoji: { fontSize: 32, marginBottom: 4 },
-  summaryValue: { fontSize: fonts['3xl'], fontWeight: '900', color: colors.yellow },
+  summaryValue: { fontSize: fonts['3xl'], fontWeight: '900', color: '#ffffff' },
   summaryLabel: {
     fontSize: fonts.xs,
     color: 'rgba(255,255,255,0.7)',
@@ -330,12 +322,10 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -357,19 +347,16 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: fonts.lg,
     fontWeight: '700',
-    color: colors.textDark,
   },
-  cardRight: { fontSize: fonts.xs, color: colors.navyPrimary, fontWeight: '600' },
+  cardRight: { fontSize: fonts.xs, fontWeight: '600' },
 
   progressBg: {
     height: 12,
-    backgroundColor: colors.navyXLight,
     borderRadius: radius.full,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.navyPrimary,
     borderRadius: radius.full,
   },
   levelFooter: {
@@ -377,7 +364,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 6,
   },
-  levelFooterText: { fontSize: fonts.xs, color: colors.textMuted, fontWeight: '600' },
+  levelFooterText: { fontSize: fonts.xs, fontWeight: '600' },
 
   statsRow: {
     flexDirection: 'row',
@@ -386,19 +373,15 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1.5,
-    borderColor: colors.border,
     alignItems: 'center',
   },
-  statBoxBorder: {},
   statBoxIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: colors.navyXLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -406,15 +389,13 @@ const styles = StyleSheet.create({
   statBoxValue: {
     fontSize: fonts['2xl'],
     fontWeight: '800',
-    color: colors.textDark,
   },
   statBoxLabel: {
     fontSize: fonts.sm,
-    color: colors.textMuted,
     fontWeight: '600',
     marginTop: 2,
   },
-  statBoxSub: { fontSize: fonts.xs, color: colors.textLight, marginTop: 2 },
+  statBoxSub: { fontSize: fonts.xs, marginTop: 2 },
 
   domainRow: {
     marginBottom: 14,
@@ -428,11 +409,10 @@ const styles = StyleSheet.create({
   domainName: {
     fontSize: fonts.sm,
     fontWeight: '600',
-    color: colors.textDark,
     flex: 1,
     marginRight: 8,
   },
-  domainSub: { fontSize: fonts.xs, color: colors.textMuted },
+  domainSub: { fontSize: fonts.xs },
   domainBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -441,7 +421,6 @@ const styles = StyleSheet.create({
   domainBarBg: {
     flex: 1,
     height: 8,
-    backgroundColor: colors.navyXLight,
     borderRadius: radius.full,
     overflow: 'hidden',
   },
@@ -463,22 +442,18 @@ const styles = StyleSheet.create({
   },
   recordItem: {
     width: '46%',
-    backgroundColor: colors.navyXLight,
     borderRadius: radius.md,
     padding: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.navyBorder,
   },
   recordEmoji: { fontSize: 28, marginBottom: 6 },
   recordValue: {
     fontSize: fonts.xl,
     fontWeight: '800',
-    color: colors.navyPrimary,
   },
   recordLabel: {
     fontSize: fonts.xs,
-    color: colors.textMuted,
     fontWeight: '600',
     marginTop: 2,
     textAlign: 'center',
