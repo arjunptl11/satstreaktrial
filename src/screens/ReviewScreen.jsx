@@ -145,7 +145,7 @@ export default function ReviewScreen({ navigation }) {
     const remaining = missedQuestions.length;
     return (
       <LinearGradient
-        colors={[colors.navyDark, colors.navyPrimary]}
+        colors={[colors.primaryDark, colors.primary]}
         style={{ flex: 1 }}
       >
         <SafeAreaView style={{ flex: 1 }}>
@@ -267,7 +267,7 @@ export default function ReviewScreen({ navigation }) {
           {currentQuestion.passage && (
             <View style={styles.passageCard}>
               <View style={styles.passageHeader}>
-                <Ionicons name="document-text-outline" size={16} color={colors.navyPrimary} />
+                <Ionicons name="document-text-outline" size={16} color={colors.primary} />
                 <Text style={styles.passageLabel}>Passage</Text>
               </View>
               <Text style={styles.passageText}>{currentQuestion.passage}</Text>
@@ -372,7 +372,7 @@ export default function ReviewScreen({ navigation }) {
                 <LinearGradient
                   colors={
                     selectedChoice
-                      ? [colors.navyLight, colors.navyPrimary]
+                      ? [colors.brandMid, colors.primary]
                       : [colors.border, colors.border]
                   }
                   style={styles.submitBtn}
@@ -396,7 +396,7 @@ export default function ReviewScreen({ navigation }) {
                 style={{ flex: 1 }}
               >
                 <LinearGradient
-                  colors={[colors.navyLight, colors.navyPrimary]}
+                  colors={[colors.brandMid, colors.primary]}
                   style={styles.submitBtn}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -445,14 +445,14 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: fonts.base, fontWeight: '700', color: colors.textDark },
   headerSub: { fontSize: fonts.xs, color: colors.textMuted },
   scoreBadge: {
-    backgroundColor: colors.navyXLight,
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.full,
     borderWidth: 1.5,
-    borderColor: colors.navyBorder,
+    borderColor: colors.border,
   },
-  scoreText: { fontSize: fonts.sm, fontWeight: '700', color: colors.navyPrimary },
+  scoreText: { fontSize: fonts.sm, fontWeight: '700', color: colors.primary },
 
   progressTrack: { height: 4, backgroundColor: colors.errorLight },
   progressFill: { height: 4, backgroundColor: colors.error },
@@ -488,14 +488,14 @@ const styles = StyleSheet.create({
 
   tagRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   domainTag: {
-    backgroundColor: colors.navyXLight,
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: colors.navyBorder,
+    borderColor: colors.border,
   },
-  domainTagText: { fontSize: fonts.xs, color: colors.navyPrimary, fontWeight: '600' },
+  domainTagText: { fontSize: fonts.xs, color: colors.primary, fontWeight: '600' },
   diffTag: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   passageLabel: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.navyPrimary,
+    color: colors.primary,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -532,12 +532,12 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: 14,
     borderWidth: 1.5,
-    borderColor: colors.navyBorder,
+    borderColor: colors.border,
   },
   questionLabel: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.navyPrimary,
+    color: colors.primary,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   choiceDefault: { backgroundColor: colors.white, borderColor: colors.border },
-  choiceSelected: { backgroundColor: colors.navyXLight, borderColor: colors.navyPrimary },
+  choiceSelected: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
   choiceCorrect: { backgroundColor: colors.successLight, borderColor: colors.success },
   choiceIncorrect: { backgroundColor: colors.errorLight, borderColor: colors.error },
   choiceLabel: {
@@ -570,13 +570,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   labelDefault: { backgroundColor: colors.offWhite },
-  labelSelected: { backgroundColor: colors.navyPrimary },
+  labelSelected: { backgroundColor: colors.primary },
   labelCorrect: { backgroundColor: colors.success },
   labelIncorrect: { backgroundColor: colors.error },
   choiceLabelText: { fontSize: fonts.sm, fontWeight: '800', color: colors.white },
   choiceMainText: { flex: 1, fontSize: fonts.base, lineHeight: 22 },
   choiceText: { color: colors.textDark },
-  choiceTextSelected: { color: colors.navyPrimary, fontWeight: '600' },
+  choiceTextSelected: { color: colors.primary, fontWeight: '600' },
   choiceTextCorrect: { color: '#065F46', fontWeight: '600' },
   choiceTextIncorrect: { color: '#991B1B', fontWeight: '600' },
 
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   emptyBtn: {
-    backgroundColor: colors.navyPrimary,
+    backgroundColor: colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: radius.full,
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     alignItems: 'center',
   },
-  doneBtnText: { color: colors.navyDark, fontSize: fonts.lg, fontWeight: '800' },
+  doneBtnText: { color: colors.primaryDark, fontSize: fonts.lg, fontWeight: '800' },
   reviewAgainBtn: { marginTop: 16, paddingVertical: 12 },
   reviewAgainText: {
     color: 'rgba(255,255,255,0.65)',

@@ -20,7 +20,7 @@ const SLIDES = [
     emoji: '🏆',
     title: 'Build Your Streak',
     subtitle: 'Practice daily to keep your streak alive and earn bonus XP. Consistency is the key to SAT success.',
-    bg: [colors.navyDark, colors.navyPrimary],
+    bg: [colors.primaryDark, colors.primary],
     accent: colors.yellow,
   },
   {
@@ -28,7 +28,7 @@ const SLIDES = [
     emoji: '🎯',
     title: 'Track Progress',
     subtitle: 'See your accuracy improve across all SAT domains over time. Know your strengths and target your weaknesses.',
-    bg: [colors.navyPrimary, colors.navyLight],
+    bg: [colors.primary, colors.brandMid],
     accent: colors.yellowLight,
   },
   {
@@ -36,7 +36,7 @@ const SLIDES = [
     emoji: '⚡',
     title: 'Earn XP & Level Up',
     subtitle: 'Gain experience points for every question and unlock achievements. Make SAT prep feel like a game.',
-    bg: [colors.navyLight, '#5B3FFF'],
+    bg: [colors.brandMid, '#5B3FFF'],
     accent: colors.yellow,
   },
 ];
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   nextText: {
-    color: colors.navyDark,
+    color: colors.primaryDark,
     fontSize: fonts.base,
     fontWeight: '800',
     letterSpacing: 0.2,

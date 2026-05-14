@@ -41,7 +41,7 @@ export default function QuestionCard({ question, questionNumber, totalQuestions 
       {question.passage ? (
         <View style={styles.passageCard}>
           <View style={styles.passageHeaderRow}>
-            <Ionicons name="document-text-outline" size={15} color={colors.navyPrimary} />
+            <Ionicons name="document-text-outline" size={15} color={colors.primary} />
             <Text style={styles.passageHeaderText}>Passage</Text>
           </View>
           <Text style={styles.passageText}>{question.passage}</Text>
@@ -68,17 +68,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   domainTag: {
-    backgroundColor: colors.navyXLight,
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: colors.navyBorder,
+    borderColor: colors.border,
     maxWidth: '60%',
   },
   domainTagText: {
     fontSize: fonts.xs,
-    color: colors.navyPrimary,
+    color: colors.primary,
     fontWeight: '600',
   },
   diffTag: {
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   passageHeaderText: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.navyPrimary,
+    color: colors.primary,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1.5,
-    borderColor: colors.navyBorder,
-    shadowColor: colors.navyPrimary,
+    borderColor: colors.border,
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 6,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   questionNumber: {
     fontSize: fonts.xs,
     fontWeight: '700',
-    color: colors.navyPrimary,
+    color: colors.primary,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.8,

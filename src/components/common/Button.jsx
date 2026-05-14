@@ -33,7 +33,7 @@ export default function Button({
         style={[fullWidth && styles.fullWidth, style]}
       >
         <LinearGradient
-          colors={isDisabled ? [colors.border, colors.border] : [colors.navyLight, colors.navyPrimary]}
+          colors={isDisabled ? [colors.border, colors.border] : [colors.brandMid, colors.primary]}
           style={[styles.btn, { paddingVertical: sz.paddingVertical, paddingHorizontal: sz.paddingHorizontal }]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -65,7 +65,7 @@ export default function Button({
           end={{ x: 1, y: 0 }}
         >
           {loading ? (
-            <ActivityIndicator color={colors.navyDark} size="small" />
+            <ActivityIndicator color={colors.primaryDark} size="small" />
           ) : (
             <Text style={[styles.accentText, { fontSize: sz.fontSize }, textStyle]}>
               {title}
@@ -91,7 +91,7 @@ export default function Button({
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={colors.navyPrimary} size="small" />
+          <ActivityIndicator color={colors.primary} size="small" />
         ) : (
           <Text style={[styles.outlineText, { fontSize: sz.fontSize }, textStyle]}>
             {title}
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.navyDark,
+    shadowColor: colors.primaryDark,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -143,21 +143,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   accentText: {
-    color: colors.navyDark,
+    color: colors.primaryDark,
     fontWeight: '800',
     letterSpacing: 0.2,
   },
   outlineBtn: {
     borderRadius: radius.sm,
     borderWidth: 2,
-    borderColor: colors.navyPrimary,
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   disabledOutline: { borderColor: colors.border },
   outlineText: {
-    color: colors.navyPrimary,
+    color: colors.primary,
     fontWeight: '700',
   },
   ghostBtn: {

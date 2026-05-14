@@ -5,8 +5,8 @@ import { colors, radius } from '../../utils/theme';
 export default function ProgressBar({
   progress = 0,        // 0 to 1
   height = 10,
-  fillColor = colors.navyPrimary,
-  trackColor = colors.navyXLight,
+  fillColor = colors.primary,
+  trackColor = colors.primaryLight,
   borderRadius,
   animated = true,
   showPercentage = false,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   percentText: {
     fontSize: 13,
-    color: colors.navyPrimary,
+    color: colors.primary,
     fontWeight: '700',
   },
 });
