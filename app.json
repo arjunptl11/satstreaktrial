@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "SATstreak",
+    "slug": "satstreak",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B00BF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.arjuntutors.satstreak"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B00BF"
+      },
+      "package": "com.arjuntutors.satstreak"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#1B00BF"
+        }
+      ]
+    ]
+  }
+}
