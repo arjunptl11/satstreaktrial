@@ -1,30 +1,31 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, Text } from 'react-native';
-import { colors, radius } from '../../utils/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import { radius } from '../../utils/theme';
 
 export default function ProgressBar({
-  progress = 0,        // 0 to 1
+  progress = 0,
   height = 10,
-  fillColor = colors.primary,
-  trackColor = colors.primaryLight,
+  fillColor,
+  trackColor,
   borderRadius,
   animated = true,
   showPercentage = false,
   label,
   style,
 }) {
+  const { colors } = useTheme();
+  const resolvedFill = fillColor || colors.primary;
+  const resolvedTrack = trackColor || colors.primaryLight;
+
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const clampedProgress = Math.min(Math.max(progress, 0), 1);
+    const clamped = Math.min(Math.max(progress, 0), 1);
     if (animated) {
-      Animated.timing(animatedWidth, {
-        toValue: clampedProgress,
-        duration: 500,
-        useNativeDriver: false,
-      }).start();
+      Animated.timing(animatedWidth, { toValue: clamped, duration: 500, useNativeDriver: false }).start();
     } else {
-      animatedWidth.setValue(clampedProgress);
+      animatedWidth.setValue(clamped);
     }
   }, [progress, animated, animatedWidth]);
 
@@ -32,36 +33,21 @@ export default function ProgressBar({
   const percentage = Math.round(Math.min(Math.max(progress, 0), 1) * 100);
 
   return (
-    <View style={[style]}>
+    <View style={style}>
       {(label || showPercentage) && (
         <View style={styles.labelRow}>
-          {label && <Text style={styles.labelText}>{label}</Text>}
-          {showPercentage && <Text style={styles.percentText}>{percentage}%</Text>}
+          {label && <Text style={[styles.labelText, { color: colors.textMuted }]}>{label}</Text>}
+          {showPercentage && <Text style={[styles.percentText, { color: colors.primary }]}>{percentage}%</Text>}
         </View>
       )}
-      <View
-        style={[
-          styles.track,
-          {
-            height,
-            backgroundColor: trackColor,
-            borderRadius: br,
-          },
-        ]}
-      >
+      <View style={[styles.track, { height, backgroundColor: resolvedTrack, borderRadius: br }]}>
         <Animated.View
-          style={[
-            styles.fill,
-            {
-              height,
-              backgroundColor: fillColor,
-              borderRadius: br,
-              width: animatedWidth.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['0%', '100%'],
-              }),
-            },
-          ]}
+          style={[styles.fill, {
+            height,
+            backgroundColor: resolvedFill,
+            borderRadius: br,
+            width: animatedWidth.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+          }]}
         />
       </View>
     </View>
@@ -71,19 +57,7 @@ export default function ProgressBar({
 const styles = StyleSheet.create({
   track: { overflow: 'hidden' },
   fill: {},
-  labelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  labelText: {
-    fontSize: 13,
-    color: colors.textMuted,
-    fontWeight: '600',
-  },
-  percentText: {
-    fontSize: 13,
-    color: colors.primary,
-    fontWeight: '700',
-  },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  labelText: { fontSize: 13, fontWeight: '600' },
+  percentText: { fontSize: 13, fontWeight: '700' },
 });

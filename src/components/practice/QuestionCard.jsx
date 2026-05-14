@@ -1,36 +1,49 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fonts, spacing, radius } from '../../utils/theme';
+import { useTheme } from '../../contexts/ThemeContext';
+import { fonts, spacing, radius } from '../../utils/theme';
+
+const sanitizeText = (text) => {
+  if (!text) return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/—/g, ' - ')
+    .replace(/–/g, ' - ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
 
 export default function QuestionCard({ question, questionNumber, totalQuestions }) {
+  const { colors } = useTheme();
+
   if (!question) return null;
 
-  const getDifficultyColor = (diff) => {
-    if (diff === 'Easy') return colors.easy;
-    if (diff === 'Hard') return colors.error;
-    return colors.medium;
+  const getDifficultyStyle = (diff) => {
+    if (diff === 'Easy') return { color: colors.easy, bg: colors.easyBg };
+    if (diff === 'Hard') return { color: colors.error, bg: colors.errorLight };
+    return { color: colors.medium, bg: colors.mediumBg };
   };
 
-  const diffColor = getDifficultyColor(question.difficulty);
+  const diff = getDifficultyStyle(question.difficulty);
+  const hasPassage = question.passage && question.passage !== 'null' && question.passage.trim().length > 0;
 
   return (
-    <View style={styles.container}>
+    <View>
       {/* Tags */}
       <View style={styles.tagRow}>
-        <View style={styles.domainTag}>
-          <Text style={styles.domainTagText} numberOfLines={1}>
+        <View style={[styles.domainTag, { backgroundColor: colors.primaryLight, borderColor: colors.border }]}>
+          <Text style={[styles.domainTagText, { color: colors.primary }]} numberOfLines={1}>
             {question.domain}
           </Text>
         </View>
-        <View style={[styles.diffTag, { backgroundColor: diffColor + '22' }]}>
-          <Text style={[styles.diffTagText, { color: diffColor }]}>
-            {question.difficulty}
-          </Text>
+        <View style={[styles.diffTag, { backgroundColor: diff.bg }]}>
+          <Text style={[styles.diffTagText, { color: diff.color }]}>{question.difficulty}</Text>
         </View>
         {totalQuestions && (
-          <View style={styles.counterTag}>
-            <Text style={styles.counterTagText}>
+          <View style={[styles.counterTag, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+            <Text style={[styles.counterTagText, { color: colors.textMuted }]}>
               {questionNumber}/{totalQuestions}
             </Text>
           </View>
@@ -38,114 +51,44 @@ export default function QuestionCard({ question, questionNumber, totalQuestions 
       </View>
 
       {/* Passage */}
-      {question.passage ? (
-        <View style={styles.passageCard}>
+      {hasPassage && (
+        <View style={[styles.passageCard, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
           <View style={styles.passageHeaderRow}>
             <Ionicons name="document-text-outline" size={15} color={colors.primary} />
-            <Text style={styles.passageHeaderText}>Passage</Text>
+            <Text style={[styles.passageHeaderText, { color: colors.primary }]}>Passage</Text>
           </View>
-          <Text style={styles.passageText}>{question.passage}</Text>
+          <Text style={[styles.passageText, { color: colors.textSecondary }]}>
+            {sanitizeText(question.passage)}
+          </Text>
         </View>
-      ) : null}
+      )}
 
       {/* Question */}
-      <View style={styles.questionCard}>
-        <Text style={styles.questionNumber}>
+      <View style={[styles.questionCard, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.primary }]}>
+        <Text style={[styles.questionNumber, { color: colors.primary }]}>
           Question {questionNumber}
         </Text>
-        <Text style={styles.questionText}>{question.prompt}</Text>
+        <Text style={[styles.questionText, { color: colors.text }]}>
+          {sanitizeText(question.prompt)}
+        </Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 4 },
-  tagRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-    flexWrap: 'wrap',
-  },
-  domainTag: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    maxWidth: '60%',
-  },
-  domainTagText: {
-    fontSize: fonts.xs,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  diffTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-  },
+  tagRow: { flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' },
+  domainTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full, borderWidth: 1, maxWidth: '60%' },
+  domainTagText: { fontSize: fonts.xs, fontWeight: '600' },
+  diffTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full },
   diffTagText: { fontSize: fonts.xs, fontWeight: '700' },
-  counterTag: {
-    backgroundColor: colors.offWhite,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  counterTagText: { fontSize: fonts.xs, color: colors.textMuted, fontWeight: '600' },
-  passageCard: {
-    backgroundColor: colors.offWhite,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: 12,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-  },
-  passageHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
-  },
-  passageHeaderText: {
-    fontSize: fonts.xs,
-    fontWeight: '700',
-    color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  passageText: {
-    fontSize: fonts.sm,
-    color: colors.textMid,
-    lineHeight: 22,
-  },
-  questionCard: {
-    backgroundColor: colors.white,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  questionNumber: {
-    fontSize: fonts.xs,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  questionText: {
-    fontSize: fonts.base,
-    color: colors.textDark,
-    lineHeight: 24,
-    fontWeight: '500',
-  },
+  counterTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full, borderWidth: 1 },
+  counterTagText: { fontSize: fonts.xs, fontWeight: '600' },
+  passageCard: { borderRadius: radius.md, padding: spacing.md, marginBottom: 12, borderWidth: 1.5 },
+  passageHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  passageHeaderText: { fontSize: fonts.xs, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
+  passageText: { fontSize: fonts.sm, lineHeight: 22 },
+  questionCard: { borderRadius: radius.md, padding: spacing.md, borderWidth: 1.5, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2 },
+  questionNumber: { fontSize: fonts.xs, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 },
+  questionText: { fontSize: fonts.base, lineHeight: 26, fontWeight: '500' },
 });
