@@ -1,113 +1,120 @@
 export const lightColors = {
-  // Backgrounds
-  background: '#fafaf9',      // stone-50
-  card: '#ffffff',
-  cardAlt: '#f5f5f4',         // stone-100
+  // Backgrounds — soft off-white with a faint blue tint
+  background: '#F6F5FF',
+  card: '#FFFFFF',
+  cardAlt: '#EEF0FF',         // light periwinkle for alternate cards
 
-  // Brand (login screen + key CTAs)
-  brand: '#1a00be',           // navy
-  brandLight: '#ede9ff',      // very light navy
+  // Brand blues
+  brand: '#1B00BF',           // deep navy
+  brandMid: '#3929E0',        // medium blue (gradients, active)
+  brandLight: '#7B6FFF',      // soft indigo-blue
+  brandXLight: '#EEF0FF',     // near-white blue tint
   yellow: '#FFDD00',
-  yellowDark: '#d4a017',
+  yellowDark: '#D4A017',      // golden — gradients, depth
+  yellowLight: '#FFF7B0',
+  yellowXLight: '#FFFDE7',
 
-  // Emerald (primary functional)
-  primary: '#059669',         // emerald-600
-  primaryLight: '#d1fae5',    // emerald-100
-  primaryXLight: '#ecfdf5',   // emerald-50
-  primaryDark: '#047857',     // emerald-700
-  primaryText: '#065f46',     // emerald-800
+  // Primary = navy (buttons, headers, active states)
+  primary: '#1B00BF',
+  primaryLight: '#EEF0FF',
+  primaryXLight: '#F5F4FF',
+  primaryDark: '#0D0070',
+  primaryText: '#0D0070',
 
-  // Amber (XP/energy)
-  accent: '#f59e0b',          // amber-500
-  accentLight: '#fef3c7',     // amber-100
-  accentXLight: '#fffbeb',    // amber-50
-  accentDark: '#d97706',      // amber-600
+  // Accent = yellow (XP, highlights, energy)
+  accent: '#FFDD00',
+  accentLight: '#FFF7B0',
+  accentXLight: '#FFFDE7',
+  accentDark: '#D4A017',
 
-  // Orange (streaks)
-  streak: '#f97316',          // orange-500
-  streakLight: '#ffedd5',     // orange-100
+  // Streak = warm golden-yellow
+  streak: '#F0A500',
+  streakLight: '#FFF3CC',
 
   // Borders
-  border: '#e7e5e4',          // stone-200
-  borderLight: '#f5f5f4',     // stone-100
+  border: '#DDD9FF',          // soft lavender border
+  borderLight: '#EEEAFF',
 
   // Text
-  text: '#1e293b',            // slate-800
-  textSecondary: '#475569',   // slate-600
-  textMuted: '#64748b',       // slate-500
-  textLight: '#94a3b8',       // slate-400
+  text: '#0A0028',            // near-black navy
+  textSecondary: '#3D3564',
+  textMuted: '#6E67A0',
+  textLight: '#A49FC8',
 
-  // Status
+  // Status (keep universal green/red)
   success: '#059669',
-  successLight: '#d1fae5',
-  successText: '#065f46',
-  error: '#dc2626',           // red-600
-  errorLight: '#fee2e2',      // red-100
-  errorText: '#991b1b',       // red-800
+  successLight: '#D1FAE5',
+  successText: '#065F46',
+  error: '#DC2626',
+  errorLight: '#FEE2E2',
+  errorText: '#991B1B',
 
-  // Difficulty
-  easy: '#065f46',
-  easyBg: '#d1fae5',
-  medium: '#92400e',
-  mediumBg: '#fef3c7',
-  hard: '#991b1b',
-  hardBg: '#fee2e2',
+  // Difficulty badges
+  easy: '#065F46',
+  easyBg: '#D1FAE5',
+  medium: '#854D0E',
+  mediumBg: '#FEF9C3',
+  hard: '#991B1B',
+  hardBg: '#FEE2E2',
 
-  // UI
-  white: '#ffffff',
-  overlay: 'rgba(0,0,0,0.5)',
-  inactive: '#94a3b8',
+  white: '#FFFFFF',
+  overlay: 'rgba(10,0,40,0.45)',
+  inactive: '#A49FC8',
 };
 
 export const darkColors = {
-  background: '#0f172a',      // slate-900
-  card: '#1e293b',            // slate-800
-  cardAlt: '#334155',         // slate-700
+  background: '#08001E',      // very dark navy
+  card: '#120936',
+  cardAlt: '#1E1050',
 
-  brand: '#6d4fff',
-  brandLight: '#1e1642',
+  brand: '#7B6FFF',           // lighter blue in dark mode
+  brandMid: '#5A4FE8',
+  brandLight: '#3929E0',
+  brandXLight: '#1A0F4A',
   yellow: '#FFDD00',
-  yellowDark: '#d4a017',
+  yellowDark: '#D4A017',
+  yellowLight: '#FFF7B0',
+  yellowXLight: '#2A2200',
 
-  primary: '#10b981',         // emerald-500 (brighter in dark)
-  primaryLight: '#064e3b',
-  primaryXLight: '#022c22',
-  primaryDark: '#34d399',
-  primaryText: '#6ee7b7',
+  primary: '#7B6FFF',
+  primaryLight: '#1A0F4A',
+  primaryXLight: '#100830',
+  primaryDark: '#A99DFF',
+  primaryText: '#C4BEFF',
 
-  accent: '#fbbf24',
-  accentLight: '#451a03',
-  accentXLight: '#2d1200',
-  accentDark: '#f59e0b',
+  accent: '#FFDD00',
+  accentLight: '#2A2200',
+  accentXLight: '#1A1500',
+  accentDark: '#D4A017',
 
-  streak: '#fb923c',
-  streakLight: '#431407',
+  streak: '#F0A500',
+  streakLight: '#2A1E00',
 
-  border: '#334155',
-  borderLight: '#1e293b',
+  border: '#2A1F5C',
+  borderLight: '#1A1040',
 
-  text: '#f1f5f9',
-  textSecondary: '#cbd5e1',
-  textMuted: '#94a3b8',
-  textLight: '#64748b',
+  text: '#F0EEFF',
+  textSecondary: '#C4BEFF',
+  textMuted: '#8880B8',
+  textLight: '#5A5480',
 
-  success: '#10b981',
-  successLight: '#064e3b',
-  successText: '#6ee7b7',
-  error: '#ef4444',
-  errorLight: '#450a0a',
-  errorText: '#fca5a5',
+  success: '#10B981',
+  successLight: '#064E3B',
+  successText: '#6EE7B7',
+  error: '#EF4444',
+  errorLight: '#450A0A',
+  errorText: '#FCA5A5',
 
-  easy: '#6ee7b7',
-  easyBg: '#064e3b',
-  medium: '#fde68a',
-  mediumBg: '#451a03',
-  hard: '#fca5a5',
-  hardBg: '#450a0a',
+  easy: '#6EE7B7',
+  easyBg: '#064E3B',
+  medium: '#FDE68A',
+  mediumBg: '#451A03',
+  hard: '#FCA5A5',
+  hardBg: '#450A0A',
 
-  white: '#1e293b',
+  white: '#1A1040',
   overlay: 'rgba(0,0,0,0.7)',
-  inactive: '#475569',
+  inactive: '#5A5480',
 };
 
 export const fonts = {
