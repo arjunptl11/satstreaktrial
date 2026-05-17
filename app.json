@@ -38,6 +38,12 @@
           "color": "#1B00BF"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "27e33334-0ad1-415a-9753-1e745af7e141"
+      }
+    },
+    "owner": "arjunptl"
   }
 }
