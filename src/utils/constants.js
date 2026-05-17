@@ -36,10 +36,6 @@ export const DOMAINS = [
   'Craft and Structure',
   'Expression of Ideas',
   'Standard English Conventions',
-  'Algebra',
-  'Advanced Math',
-  'Problem Solving and Data Analysis',
-  'Geometry and Trigonometry',
 ];
 
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];

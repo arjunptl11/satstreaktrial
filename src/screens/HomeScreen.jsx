@@ -24,7 +24,7 @@ export default function HomeScreen({ navigation }) {
 
   const difficultyConfig = {
     Easy: { color: colors.easy, bg: colors.easyBg, icon: 'leaf-outline', label: 'Easier questions to build confidence' },
-    Medium: { color: colors.accent, bg: colors.accentLight, icon: 'flame-outline', label: 'Balanced challenge for steady growth' },
+    Medium: { color: colors.medium, bg: colors.mediumBg, icon: 'flame-outline', label: 'Balanced challenge for steady growth' },
     Hard: { color: colors.error, bg: colors.errorLight, icon: 'skull-outline', label: 'Tough questions for advanced prep' },
   };
 
@@ -396,17 +396,17 @@ const styles = StyleSheet.create({
   streakLabel: { fontSize: fonts.sm, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
   streakRight: { alignItems: 'flex-end' },
   xpBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,40,0.18)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: radius.full,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: 'rgba(0,0,40,0.12)',
   },
-  xpValue: { color: '#ffffff', fontWeight: '700', fontSize: fonts.base },
-  levelText: { color: 'rgba(255,255,255,0.7)', fontSize: fonts.xs, fontWeight: '600', marginBottom: 2 },
-  streakMessage: { color: 'rgba(255,255,255,0.75)', fontSize: fonts.xs },
+  xpValue: { color: '#0D0070', fontWeight: '700', fontSize: fonts.base },
+  levelText: { color: 'rgba(13,0,112,0.75)', fontSize: fonts.xs, fontWeight: '600', marginBottom: 2 },
+  streakMessage: { color: 'rgba(13,0,112,0.8)', fontSize: fonts.xs },
 
   card: {
     borderRadius: radius.md,

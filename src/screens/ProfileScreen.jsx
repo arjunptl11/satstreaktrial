@@ -15,7 +15,11 @@ import { useAuth } from '../hooks/useAuth';
 import { useUserStats } from '../hooks/useUserStats';
 import { useTheme } from '../contexts/ThemeContext';
 import { fonts, spacing, radius } from '../utils/theme';
-import { ACHIEVEMENTS, DAILY_GOALS } from '../utils/constants';
+import { ACHIEVEMENTS } from '../utils/constants';
+
+const GOAL_MIN = 20;
+const GOAL_MAX = 300;
+const GOAL_STEP = 20;
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -57,12 +61,14 @@ export default function ProfileScreen() {
     );
   };
 
-  const goalLabels = { 20: 'Casual', 50: 'Regular', 100: 'Intensive' };
-  const goalDescriptions = {
-    20: '~2 questions/day',
-    50: '~5 questions/day',
-    100: '~10 questions/day',
-  };
+  const goalLabel =
+    selectedGoal <= 40 ? 'Casual' :
+    selectedGoal <= 80 ? 'Regular' :
+    selectedGoal <= 140 ? 'Focused' :
+    selectedGoal <= 220 ? 'Intensive' : 'Elite';
+
+  const questionsPerDay = Math.round(selectedGoal / 10);
+  const goalFraction = (selectedGoal - GOAL_MIN) / (GOAL_MAX - GOAL_MIN);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
@@ -111,62 +117,47 @@ export default function ProfileScreen() {
             <Ionicons name="trophy-outline" size={18} color={colors.primary} />
             <Text style={[styles.cardTitle, { color: colors.text }]}>Daily Goal</Text>
           </View>
-          <Text style={[styles.cardSub, { color: colors.textMuted }]}>Choose your daily XP target</Text>
-          <View style={styles.goalOptions}>
-            {DAILY_GOALS.map(goal => (
-              <TouchableOpacity
-                key={goal}
-                onPress={() => setSelectedGoal(goal)}
+
+          <View style={styles.goalDisplay}>
+            <Text style={[styles.goalBigValue, { color: colors.primary }]}>{selectedGoal}</Text>
+            <View>
+              <Text style={[styles.goalXpLabel, { color: colors.textMuted }]}>XP / day</Text>
+              <Text style={[styles.goalLevelLabel, { color: colors.primary }]}>{goalLabel} · ~{questionsPerDay} questions</Text>
+            </View>
+          </View>
+
+          <View style={styles.sliderRow}>
+            <TouchableOpacity
+              onPress={() => setSelectedGoal(g => Math.max(GOAL_MIN, g - GOAL_STEP))}
+              style={[styles.sliderBtn, { backgroundColor: colors.primaryXLight, borderColor: colors.primaryLight }]}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={[styles.sliderBtnText, { color: colors.primary }]}>−</Text>
+            </TouchableOpacity>
+
+            <View style={[styles.sliderTrack, { backgroundColor: colors.primaryXLight }]}>
+              <View
                 style={[
-                  styles.goalOption,
-                  { borderColor: colors.border, backgroundColor: colors.cardAlt },
-                  selectedGoal === goal && { borderColor: colors.primary, backgroundColor: colors.primaryXLight },
+                  styles.sliderFill,
+                  { width: `${Math.max(goalFraction * 100, 4)}%`, backgroundColor: colors.primary },
                 ]}
-                activeOpacity={0.75}
-              >
-                <Text
-                  style={[
-                    styles.goalValue,
-                    { color: colors.text },
-                    selectedGoal === goal && { color: colors.primary },
-                  ]}
-                >
-                  {goal}
-                </Text>
-                <Text
-                  style={[
-                    styles.goalUnit,
-                    { color: colors.textMuted },
-                    selectedGoal === goal && { color: colors.primary },
-                  ]}
-                >
-                  XP
-                </Text>
-                <Text
-                  style={[
-                    styles.goalLabel,
-                    { color: colors.textSecondary },
-                    selectedGoal === goal && { color: colors.primary },
-                  ]}
-                >
-                  {goalLabels[goal]}
-                </Text>
-                <Text
-                  style={[
-                    styles.goalDesc,
-                    { color: colors.textLight },
-                    selectedGoal === goal && { color: colors.primaryText },
-                  ]}
-                >
-                  {goalDescriptions[goal]}
-                </Text>
-                {selectedGoal === goal && (
-                  <View style={[styles.goalCheck, { backgroundColor: colors.primary }]}>
-                    <Ionicons name="checkmark" size={12} color="#ffffff" />
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
+              />
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setSelectedGoal(g => Math.min(GOAL_MAX, g + GOAL_STEP))}
+              style={[styles.sliderBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={[styles.sliderBtnText, { color: '#ffffff' }]}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.sliderEndLabels}>
+            <Text style={[styles.sliderEndText, { color: colors.textLight }]}>{GOAL_MIN} XP</Text>
+            <Text style={[styles.sliderEndText, { color: colors.textLight }]}>{GOAL_MAX} XP</Text>
           </View>
         </View>
 
@@ -278,10 +269,7 @@ export default function ProfileScreen() {
             <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Version</Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>1.0.0</Text>
           </View>
-          <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Questions Source</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>PineSAT API</Text>
-          </View>
+          <Text style={[styles.arjunLine, { color: colors.textMuted }]}>An ArjunTutors product.</Text>
         </View>
 
         {/* Sign Out */}
@@ -394,40 +382,55 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: fonts.lg, fontWeight: '700', flex: 1 },
   cardSub: { fontSize: fonts.sm, marginBottom: 14, marginTop: -8 },
 
-  goalOptions: { flexDirection: 'row', gap: 10 },
-  goalOption: {
-    flex: 1,
-    borderRadius: radius.md,
-    padding: 14,
-    borderWidth: 2,
+  goalDisplay: {
+    flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
+    gap: 14,
+    marginBottom: 18,
   },
-  goalValue: {
-    fontSize: fonts['2xl'],
+  goalBigValue: {
+    fontSize: 48,
     fontWeight: '900',
+    lineHeight: 52,
   },
-  goalUnit: {
-    fontSize: fonts.xs,
-    fontWeight: '700',
-    marginTop: -2,
+  goalXpLabel: { fontSize: fonts.sm, fontWeight: '600' },
+  goalLevelLabel: { fontSize: fonts.xs, fontWeight: '700', marginTop: 2 },
+
+  sliderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 6,
   },
-  goalLabel: {
-    fontSize: fonts.sm,
-    fontWeight: '700',
-    marginTop: 4,
-  },
-  goalDesc: { fontSize: fonts.xs, marginTop: 2, textAlign: 'center' },
-  goalCheck: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+  sliderBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1.5,
   },
+  sliderBtnText: {
+    fontSize: 22,
+    fontWeight: '700',
+    lineHeight: 26,
+  },
+  sliderTrack: {
+    flex: 1,
+    height: 10,
+    borderRadius: radius.full,
+    overflow: 'hidden',
+  },
+  sliderFill: {
+    height: '100%',
+    borderRadius: radius.full,
+  },
+  sliderEndLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  sliderEndText: { fontSize: fonts.xs },
 
   settingRow: {
     flexDirection: 'row',
@@ -495,6 +498,13 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: fonts.sm },
   infoValue: { fontSize: fonts.sm, fontWeight: '600' },
+  arjunLine: {
+    fontSize: fonts.sm,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingBottom: 4,
+  },
 
   signOutBtn: {
     borderRadius: radius.md,

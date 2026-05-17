@@ -68,8 +68,7 @@ export default function LoginScreen({ navigation }) {
             {/* Logo */}
             <View style={styles.logoContainer}>
               <Text style={styles.logoText}>
-                <Text style={styles.logoEmoji}>⚡</Text>
-                {' '}SATstreak
+                SATstreak
               </Text>
               <Text style={styles.byLine}>
                 by{' '}
@@ -204,7 +203,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 36,
   },
-  logoEmoji: { fontSize: 38 },
   logoText: {
     fontSize: 38,
     fontWeight: '800',
