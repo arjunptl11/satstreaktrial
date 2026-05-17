@@ -1,5 +1,6 @@
 import 'react-native-url-polyfill/auto';
 import React from 'react';
+import { registerRootComponent } from 'expo';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -9,7 +10,7 @@ import { UserStatsProvider } from './src/hooks/useUserStats';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
-export default function App() {
+function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -27,3 +28,7 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+registerRootComponent(App);
+
+export default App;
