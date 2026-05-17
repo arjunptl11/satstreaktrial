@@ -13,14 +13,19 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.arjuntutors.satstreak"
+      "bundleIdentifier": "com.arjuntutors.satstreak",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1B00BF"
       },
-      "package": "com.arjuntutors.satstreak"
+      "package": "com.arjuntutors.satstreak",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
