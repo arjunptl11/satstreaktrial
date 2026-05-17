@@ -79,7 +79,7 @@ export default function PracticeScreen({ navigation, route }) {
   const { difficulty, domain, isDailyDrill, count = 10 } = route.params || {};
   const { user } = useAuth();
   const { questions, loading, error, loadQuestions } = useQuestions();
-  const { recordAnswer, updateStreak, addMissedQuestion } = useUserStats(user?.id);
+  const { recordAnswer, updateStreak, addMissedQuestion, answeredQuestionIds, loading: statsLoading } = useUserStats();
   const { colors } = useTheme();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -97,9 +97,12 @@ export default function PracticeScreen({ navigation, route }) {
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    loadQuestions(difficulty, domain, count);
+    // Wait for stats to load so we can exclude already-answered IDs
+    if (statsLoading) return;
+    loadQuestions(difficulty, domain, count, answeredQuestionIds);
     updateStreak();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statsLoading]);
 
   const currentQuestion = questions[currentIndex];
 
@@ -240,7 +243,7 @@ export default function PracticeScreen({ navigation, route }) {
                 setTotalXpSession(0);
                 setSessionDone(false);
                 setShowExplanation(false);
-                loadQuestions(difficulty, domain, count);
+                loadQuestions(difficulty, domain, count, answeredQuestionIds);
               }}
               style={styles.practiceAgainBtn}
             >
@@ -271,7 +274,7 @@ export default function PracticeScreen({ navigation, route }) {
           {error ? 'Failed to load questions' : 'No questions found'}
         </Text>
         <TouchableOpacity
-          onPress={() => loadQuestions(difficulty, domain, count)}
+          onPress={() => loadQuestions(difficulty, domain, count, answeredQuestionIds)}
           style={[styles.retryBtn, { backgroundColor: colors.yellow }]}
         >
           <Text style={[styles.retryText, { color: colors.brand }]}>Try Again</Text>

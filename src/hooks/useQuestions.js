@@ -6,11 +6,11 @@ export function useQuestions() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadQuestions = useCallback(async (difficulty = null, domain = null, count = 10) => {
+  const loadQuestions = useCallback(async (difficulty = null, domain = null, count = 10, excludedIds = []) => {
     setLoading(true);
     setError(null);
     try {
-      const qs = await getFilteredQuestions(difficulty, domain, count);
+      const qs = await getFilteredQuestions(difficulty, domain, count, excludedIds);
       setQuestions(qs);
       return qs;
     } catch (err) {

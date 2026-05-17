@@ -17,7 +17,7 @@ import { LEVELS, DOMAINS, DIFFICULTIES } from '../utils/constants';
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
-  const { stats, missedQuestions } = useUserStats(user?.id);
+  const { stats, missedQuestions } = useUserStats();
   const { colors } = useTheme();
   const [selectedDifficulty, setSelectedDifficulty] = useState('Medium');
   const [selectedDomain, setSelectedDomain] = useState('All Domains');
@@ -47,12 +47,10 @@ export default function HomeScreen({ navigation }) {
   const xpToNext = LEVELS.xpForNextLevel(stats.xp);
   const levelProgress = 1 - xpToNext / 100;
 
-  const startPractice = (isDailyDrill = false) => {
+  const startPractice = () => {
     navigation.navigate('Practice', {
-      difficulty: isDailyDrill ? null : selectedDifficulty,
-      domain:
-        isDailyDrill ? null : selectedDomain === 'All Domains' ? null : selectedDomain,
-      isDailyDrill,
+      difficulty: selectedDifficulty,
+      domain: selectedDomain === 'All Domains' ? null : selectedDomain,
       count: 10,
     });
   };
@@ -148,8 +146,8 @@ export default function HomeScreen({ navigation }) {
           )}
         </View>
 
-        {/* Daily Drill */}
-        {!stats.dailyDrillDone && (
+        {/* Daily Vocab Quiz */}
+        {!stats.dailyVocabDone && (
           <LinearGradient
             colors={[colors.primaryXLight, colors.accentXLight]}
             style={[styles.drillCard, { borderWidth: 1.5, borderColor: colors.primaryLight }]}
@@ -158,16 +156,16 @@ export default function HomeScreen({ navigation }) {
           >
             <View style={styles.drillLeft}>
               <View style={[styles.drillIconWrap, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="flash" size={24} color={colors.primary} />
+                <Ionicons name="book" size={22} color={colors.primary} />
               </View>
-              <View style={{ marginLeft: 12 }}>
-                <Text style={[styles.drillTitle, { color: colors.text }]}>Daily Drill</Text>
-                <Text style={[styles.drillSub, { color: colors.primary }]}>+5 bonus XP · 10 questions</Text>
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={[styles.drillTitle, { color: colors.text }]}>Daily Vocab Quiz</Text>
+                <Text style={[styles.drillSub, { color: colors.primary }]}>+5 bonus XP · 10 SAT words</Text>
               </View>
             </View>
             <TouchableOpacity
               style={[styles.drillBtn, { backgroundColor: colors.primary }]}
-              onPress={() => startPractice(true)}
+              onPress={() => navigation.navigate('Vocab', { isDailyVocab: true, count: 10 })}
               activeOpacity={0.85}
             >
               <Text style={[styles.drillBtnText, { color: colors.white }]}>Start</Text>
@@ -175,18 +173,24 @@ export default function HomeScreen({ navigation }) {
           </LinearGradient>
         )}
 
-        {stats.dailyDrillDone && (
-          <View style={[styles.drillDoneCard, { backgroundColor: colors.successLight, borderColor: colors.primary }]}>
-            <View style={styles.drillDoneLeft}>
-              <View style={[styles.drillDoneIcon, { backgroundColor: colors.primaryXLight }]}>
-                <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+        {stats.dailyVocabDone && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Vocab', { isDailyVocab: false, count: 10 })}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.drillDoneCard, { backgroundColor: colors.successLight, borderColor: colors.primary }]}>
+              <View style={styles.drillDoneLeft}>
+                <View style={[styles.drillDoneIcon, { backgroundColor: colors.primaryXLight }]}>
+                  <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+                </View>
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={[styles.drillDoneTitle, { color: colors.successText }]}>Daily Vocab Complete!</Text>
+                  <Text style={[styles.drillDoneSub, { color: colors.primary }]}>Tap to keep practicing vocab</Text>
+                </View>
               </View>
-              <View style={{ marginLeft: 12 }}>
-                <Text style={[styles.drillDoneTitle, { color: colors.successText }]}>Daily Drill Complete!</Text>
-                <Text style={[styles.drillDoneSub, { color: colors.primary }]}>Come back tomorrow for more</Text>
-              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.primary} />
             </View>
-          </View>
+          </TouchableOpacity>
         )}
 
         {/* Quick Stats */}
@@ -321,7 +325,7 @@ export default function HomeScreen({ navigation }) {
           })}
 
           <TouchableOpacity
-            onPress={() => startPractice(false)}
+            onPress={() => startPractice()}
             activeOpacity={0.85}
             style={{ marginTop: 12 }}
           >

@@ -23,7 +23,7 @@ const GOAL_STEP = 20;
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const { stats, unlockedAchievements } = useUserStats(user?.id);
+  const { stats, unlockedAchievements } = useUserStats();
   const { colors, isDark, toggleTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [selectedGoal, setSelectedGoal] = useState(50);

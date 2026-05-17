@@ -21,7 +21,7 @@ const sanitizeText = (text) => {
 export default function ReviewScreen({ navigation }) {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const { missedQuestions, removeMissedQuestion, recordAnswer } = useUserStats(user?.id);
+  const { missedQuestions, removeMissedQuestion, recordAnswer } = useUserStats();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);

@@ -28,11 +28,11 @@ export const fetchQuestions = async () => {
   }
 };
 
-export const getFilteredQuestions = async (difficulty = null, domain = null, count = 10) => {
+export const getFilteredQuestions = async (difficulty = null, domain = null, count = 10, excludedIds = []) => {
   const all = await fetchQuestions();
 
   if (!all || all.length === 0) {
-    return getFallbackQuestions(difficulty, count);
+    return getFallbackQuestions(difficulty, count, excludedIds);
   }
 
   let filtered = all;
@@ -44,12 +44,21 @@ export const getFilteredQuestions = async (difficulty = null, domain = null, cou
     filtered = filtered.filter(q => q.domain === domain);
   }
 
-  // If filtering left nothing, use unfiltered
-  if (filtered.length === 0) filtered = all;
+  // Exclude already-answered questions
+  const excludedSet = new Set((excludedIds || []).map(String));
+  const unseen = filtered.filter(q => !excludedSet.has(String(q.id)));
 
-  // Shuffle
-  const shuffled = [...filtered].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count).map(normalizeQuestion);
+  // Prefer unseen; if user has exhausted unseen for this filter, fall back to seen
+  // (so the experience never breaks), but inform via metadata.
+  const pool = unseen.length > 0 ? unseen : filtered;
+  const allUnseenExhausted = unseen.length === 0 && filtered.length > 0;
+
+  if (pool.length === 0) return [];
+
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, count).map(normalizeQuestion);
+  picked._allUnseenExhausted = allUnseenExhausted;
+  return picked;
 };
 
 export const normalizeQuestion = (q) => ({
@@ -65,7 +74,7 @@ export const normalizeQuestion = (q) => ({
 });
 
 // Fallback questions for when API is unavailable
-const getFallbackQuestions = (difficulty, count) => {
+const getFallbackQuestions = (difficulty, count, excludedIds = []) => {
   const questions = [
     {
       id: 'fallback_1',
@@ -180,6 +189,10 @@ const getFallbackQuestions = (difficulty, count) => {
     if (diff.length > 0) filtered = diff;
   }
 
-  const shuffled = [...filtered].sort(() => Math.random() - 0.5);
+  const excludedSet = new Set((excludedIds || []).map(String));
+  const unseen = filtered.filter(q => !excludedSet.has(String(q.id)));
+  const pool = unseen.length > 0 ? unseen : filtered;
+
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count).map(q => ({ ...q }));
 };

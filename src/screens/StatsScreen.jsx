@@ -83,7 +83,7 @@ const chartStyles = StyleSheet.create({
 
 export default function StatsScreen() {
   const { user } = useAuth();
-  const { stats, domainStats, weeklyData } = useUserStats(user?.id);
+  const { stats, domainStats, weeklyData } = useUserStats();
   const { colors } = useTheme();
 
   const accuracy =

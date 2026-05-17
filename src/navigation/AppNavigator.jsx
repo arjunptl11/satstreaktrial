@@ -13,6 +13,7 @@ import PracticeScreen from '../screens/PracticeScreen';
 import ReviewScreen from '../screens/ReviewScreen';
 import StatsScreen from '../screens/StatsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import VocabScreen from '../screens/VocabScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -82,6 +83,7 @@ export default function AppNavigator() {
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="Practice" component={PracticeScreen} />
           <Stack.Screen name="Review" component={ReviewScreen} />
+          <Stack.Screen name="Vocab" component={VocabScreen} />
         </>
       )}
     </Stack.Navigator>
