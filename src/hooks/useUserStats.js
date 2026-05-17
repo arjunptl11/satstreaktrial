@@ -103,6 +103,7 @@ export function UserStatsProvider({ children }) {
 
         if (answers) {
           setAnsweredQuestionIds(answers.map(a => a.question_id));
+
           const domainMap = {};
           EMPTY_DOMAIN_STATS.forEach(d => {
             domainMap[d.domain] = { domain: d.domain, total_questions: 0, total_correct: 0 };
@@ -115,6 +116,20 @@ export function UserStatsProvider({ children }) {
             if (a.is_correct) domainMap[a.domain].total_correct += 1;
           });
           setDomainStats(Object.values(domainMap));
+
+          // Build weekly XP chart (Sun–Sat of current week)
+          const now = new Date();
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - now.getDay());
+          weekStart.setHours(0, 0, 0, 0);
+          const xpByDay = [0, 0, 0, 0, 0, 0, 0];
+          answers.forEach(a => {
+            const d = new Date(a.answered_at);
+            if (d >= weekStart) {
+              xpByDay[d.getDay()] += a.is_correct ? XP.CORRECT : XP.INCORRECT;
+            }
+          });
+          setWeeklyData(['S','M','T','W','T','F','S'].map((day, i) => ({ day, xp: xpByDay[i] })));
         }
 
         const { data: vocab } = await supabase
@@ -155,7 +170,9 @@ export function UserStatsProvider({ children }) {
   const persistStats = useCallback(async (newStats) => {
     setStats(newStats);
     if (remote) {
-      supabase.from('user_stats').update(statsToRow(newStats)).eq('user_id', userId).then(() => {});
+      supabase.from('user_stats')
+        .upsert({ user_id: userId, ...statsToRow(newStats) }, { onConflict: 'user_id' })
+        .then(({ error }) => { if (error) console.error('Stats save error:', error); });
     } else if (userId) {
       AsyncStorage.setItem(LOCAL_STATS_PREFIX + userId, JSON.stringify(newStats)).catch(() => {});
     }
@@ -215,6 +232,13 @@ export function UserStatsProvider({ children }) {
     });
 
     setAnsweredQuestionIds(prev => prev.includes(String(questionId)) ? prev : [...prev, String(questionId)]);
+
+    const todayDow = new Date().getDay();
+    setWeeklyData(prev => {
+      const next = [...prev];
+      next[todayDow] = { ...next[todayDow], xp: next[todayDow].xp + (isCorrect ? XP.CORRECT : XP.INCORRECT) };
+      return next;
+    });
 
     await persistStats(newStats);
 
