@@ -25,7 +25,7 @@ export default function LoginScreen({ navigation }) {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, enterDemoMode } = useAuth();
+  const { signIn, signUp } = useAuth();
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
@@ -172,15 +172,6 @@ export default function LoginScreen({ navigation }) {
                 </Text>
               </TouchableOpacity>
             </View>
-
-            {/* Demo mode */}
-            <TouchableOpacity onPress={enterDemoMode} style={styles.demoBtn} hitSlop={{ top: 12, bottom: 12 }}>
-              <Text style={styles.demoText}>Try Demo Mode →</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.disclaimer}>
-              No account needed for demo mode
-            </Text>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -299,16 +290,4 @@ const styles = StyleSheet.create({
   toggleBtn: { marginTop: spacing.md, alignItems: 'center' },
   toggleText: { color: colors.textMuted, fontSize: fonts.sm },
   toggleLink: { color: colors.brand, fontWeight: '700' },
-  demoBtn: { alignItems: 'center', marginTop: 24 },
-  demoText: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: fonts.base,
-    fontWeight: '600',
-  },
-  disclaimer: {
-    textAlign: 'center',
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: fonts.xs,
-    marginTop: 8,
-  },
 });
